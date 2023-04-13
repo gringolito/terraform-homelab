@@ -6,7 +6,7 @@ variable "el9_vms" {
 
 resource "proxmox_vm_qemu" "el9_ci_vm" {
   for_each    = var.el9_vms
-  name        = each.value.name
+  name        = "el9-${each.key}"
   desc        = each.value.description
   target_node = "pve01"
   clone       = "rocky-9-x64-ci-template"
