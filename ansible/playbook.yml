@@ -1,0 +1,36 @@
+---
+- hosts: centos_7
+  remote_user: root
+  become: true
+  tasks:
+    ## https://access.redhat.com/site/solutions/58625 (subscription required)
+    # http://www.linuxquestions.org/questions/showthread.php?p=4399340#post4399340
+    # add 'single-request-reopen' so it is included when /etc/resolv.conf is generated
+    - name: Apply slow DNS fix
+      lineinfile:
+        path: /etc/sysconfig/network
+        line: RES_OPTIONS="single-request-reopen"
+      notify: Restart networking
+
+    - name: Turn off sshd DNS lookup
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: UseDNS no
+      notify: Restart networking
+
+    - name: Disable GSSAPI authentication
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        line: GSSAPIAuthentication no
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart networking
+      service:
+        name: networking
+        state: restarted
+
+    - name: Restart SSH
+      service:
+        name: sshd
+        state: restarted
