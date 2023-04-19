@@ -1,7 +1,3 @@
-locals {
-  ssh_private_key = file(var.ssh_private_key_path)
-}
-
 resource "proxmox_vm_qemu" "cloudinit_vm" {
   target_node = "pve01"
   agent       = 1
