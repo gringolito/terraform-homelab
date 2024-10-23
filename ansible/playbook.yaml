@@ -1,0 +1,150 @@
+---
+- name: Enable EPEL repository
+  hosts:
+    - el8
+    - el9
+  become: true
+  roles:
+    - geerlingguy.repo-epel
+
+- name: Common customizations
+  hosts: all
+  become: true
+  tasks:
+    - name: Install common packages
+      ansible.builtin.package:
+        name: "{{ extra_packages }}"
+        state: present
+
+- name: Install Kubernetes (k8s) cluster
+  hosts: k8s
+  become: true
+  tasks:
+    - name: Install containerd runtime
+      ansible.builtin.import_role:
+        name: geerlingguy.containerd
+
+    - name: Load required kernel modules
+      community.general.modprobe:
+        name: "{{ item }}"
+        state: present
+        persistent: present
+      with_items:
+        - br_netfilter
+        - nf_conntrack
+
+    - name: Enable IPv4 forwarding
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: "1"
+        state: present
+        sysctl_set: true
+
+    - name: Only answer ARP requests for addresses on the interface on which it receives the request
+      ansible.posix.sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+        state: present
+        sysctl_set: true
+      with_items:
+        - name: net.ipv4.conf.all.arp_ignore
+          value: "1"
+        - name: net.ipv4.conf.all.arp_announce
+          value: "2"
+
+    - name: Increase conntrack table limits
+      ansible.posix.sysctl:
+        name: net.netfilter.nf_conntrack_max
+        value: "1000000"
+        state: present
+        sysctl_set: true
+
+    - name: Configure NetworkManager to not manage Calico interfaces
+      ansible.builtin.copy:
+        src: files/network-manager-calico.conf
+        dest: /etc/NetworkManager/conf.d/calico.conf
+        mode: "0644"
+      when: kubernetes_pod_network.cni == "calico"
+
+    - name: Install kubernetes
+      ansible.builtin.import_role:
+        name: geerlingguy.kubernetes
+      tags:
+        - init
+
+- name: Configure Kubernetes (k8s) cluster
+  hosts: k8s_master
+  tasks:
+    - name: Make sure that ~/.kube directory exists
+      ansible.builtin.file:
+        path: .kube
+        state: directory
+        mode: "0750"
+
+    - name: Configure kubectl for the current user
+      ansible.builtin.file:
+        src: /etc/kubernetes/admin.conf
+        dest: .kube/config
+        state: link
+
+    - name: Install Helm
+      ansible.builtin.import_role:
+        name: geerlingguy.helm
+
+    - name: Install Python3 kubernetes dependencies
+      ansible.builtin.package:
+        name: python3-kubernetes
+        state: present
+      become: true
+
+    - name: Add PureLB helm repository
+      kubernetes.core.helm_repository:
+        name: purelb
+        repo_url: https://gitlab.com/api/v4/projects/20400619/packages/helm/stable
+      tags:
+        - purelb
+
+    - name: Install PureLB helm chart
+      kubernetes.core.helm:
+        name: purelb
+        chart_ref: purelb/purelb
+        release_namespace: purelb
+        create_namespace: true
+        set_values:
+          - value: "lbnodeagent.sendgarp=true"
+      tags:
+        - purelb
+
+    - name: Configure PureLB ServiceGroup pools
+      kubernetes.core.k8s:
+        template: templates/purelb-service-group.j2
+        apply: true
+        state: present
+      tags:
+        - purelb
+
+    - name: Configure Calico's IPPool for PureLB
+      kubernetes.core.k8s:
+        template: templates/purelb-calico-ip-pool.j2
+        apply: true
+        state: present
+      when: kubernetes_pod_network.cni == "calico"
+      tags:
+        - purelb
+
+    - name: Configure Calico's BGP for PureLB
+      kubernetes.core.k8s:
+        template: templates/purelb-calico-bgp-configuration.j2
+        apply: true
+        state: present
+      when: kubernetes_pod_network.cni == "calico"
+      tags:
+        - purelb
+
+    - name: Install Portainer Agent
+      kubernetes.core.k8s:
+        src: https://downloads.portainer.io/ce2-19/portainer-agent-k8s-lb.yaml
+        apply: true
+        state: present
+      tags:
+        - purelb

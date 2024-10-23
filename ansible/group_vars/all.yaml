@@ -1,0 +1,33 @@
+---
+extra_packages:
+  - vim
+  - strace
+  - telnet
+  - curl
+  - htop
+  - iotop
+  - setroubleshoot
+
+# geerlingguy.containerd
+containerd_config_cgroup_driver_systemd: true
+
+# geerlingguy.kubernetes
+kubernetes_allow_pods_on_control_plane: false
+kubernetes_version: "1.31"
+kubernetes_calico_manifest_file: https://raw.githubusercontent.com/projectcalico/calico/refs/tags/v3.28.2/manifests/calico.yaml
+kubernetes_pod_network:
+  # Flannel CNI.
+  # cni: flannel
+  # cidr: 10.244.0.0/16
+  # Calico CNI.
+  cni: calico
+  cidr: 10.24.0.0/16
+
+# geerlingguy.helm
+helm_version: v3.16.2
+
+# local tasks - PureLB
+purelb_v4pools:
+  - subnet: 192.168.11.0/24
+    pool: 192.168.11.64/26
+    name: home

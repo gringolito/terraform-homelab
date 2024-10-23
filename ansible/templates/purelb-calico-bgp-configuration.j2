@@ -1,0 +1,25 @@
+---
+apiVersion: crd.projectcalico.org/v1
+kind: BGPConfiguration
+metadata:
+  name: default
+spec:
+  asNumber: 4200000101
+  listenPort: 179
+  logSeverityScreen: Info
+  nodeToNodeMeshEnabled: false
+  prefixAdvertisements:
+{% for pool in purelb_v4pools %}
+  - cidr: {{ pool.subnet }}
+    communities:
+    - purelb
+    - 100:100
+{% endfor %}
+{% if purelb_v6pools is defined %}
+{% for pool in purelb_v6pools %}
+  - cidr: {{ pool.subnet }}
+    communities:
+    - purelb
+    - 100:100
+{% endfor %}
+{% endif %}

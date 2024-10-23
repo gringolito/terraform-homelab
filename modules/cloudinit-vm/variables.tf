@@ -7,6 +7,11 @@ variable "description" {
   type = string
 }
 
+variable "tags" {
+  type    = list(string)
+  default = []
+}
+
 variable "template" {
   type    = string
   default = "rocky-9-x64-ci-template"
@@ -20,6 +25,11 @@ variable "vcpus" {
 variable "memory" {
   type    = number
   default = 1024
+}
+
+variable "hagroup" {
+  type = string
+  default = "terraform-ha-group"
 }
 
 variable "scsi_controller" {
@@ -69,7 +79,7 @@ variable "ci_dns_server" {
 
 variable "ci_domain" {
   type    = string
-  default = "home"
+  default = "home.gringolito.com"
 }
 
 variable "ci_wait" {
@@ -78,7 +88,7 @@ variable "ci_wait" {
 }
 
 variable "ssh_private_key_path" {
-  type      = string
+  type = string
 }
 
 variable "ansible_groups" {
