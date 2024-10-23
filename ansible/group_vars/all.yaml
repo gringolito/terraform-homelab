@@ -1,0 +1,8 @@
+---
+extra_packages:
+  - vim
+  - strace
+  - telnet
+  - curl
+  - htop
+  - iotop

@@ -1,0 +1,5 @@
+---
+kubernetes_role: control_plane
+kubernetes_pod_network:
+  cni: flannel
+  cidr: 10.24.0.0/16

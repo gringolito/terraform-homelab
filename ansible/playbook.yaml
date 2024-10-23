@@ -1,0 +1,42 @@
+---
+- name: Enable EPEL
+  hosts: el9
+  become: true
+  roles:
+  - geerlingguy.repo-epel
+
+- name: Common customizations
+  hosts: all
+  become: true
+  tasks:
+  - name: Install common packages
+    ansible.builtin.package:
+      name: "{{ extra_packages }}"
+      state: present
+
+- name: Load br_netfilter module for k8s
+  hosts: k8s
+  become: true
+  tasks:
+  - name: Always load the br_netfilter module
+    community.general.modprobe:
+      name: br_netfilter
+      state: present
+      persistent: present
+
+  - name: Enable IPv4 forwarding
+    ansible.builtin.sysctl:
+      name: net.ipv4.ip_forward
+      value: "1"
+      state: present
+
+- name: Install Kubernetes (k8s) cluster
+  hosts: k8s
+  become: true
+  vars:
+    kubernetes_allow_pods_on_control_plane: false
+    kubernetes_version: "1.31"
+    kubernetes_version_rhel_package: "1.31.1"
+  roles:
+    - geerlingguy.containerd
+    - geerlingguy.kubernetes
