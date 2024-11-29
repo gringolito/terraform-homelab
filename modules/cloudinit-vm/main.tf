@@ -20,6 +20,7 @@ resource "proxmox_vm_qemu" "cloudinit_vm" {
   }
 
   network {
+    id = 0
     bridge = "vmbr0"
     model  = var.nic_model
   }
@@ -49,28 +50,6 @@ resource "proxmox_vm_qemu" "cloudinit_vm" {
   ciupgrade    = true
   sshkeys      = var.ci_ssh_public_keys
   ci_wait      = var.ci_wait
-
-  provisioner "remote-exec" {
-    connection {
-      type        = "ssh"
-      host        = var.ci_ip
-      user        = var.ci_username
-      private_key = file(var.ssh_private_key_path)
-    }
-
-    inline = [
-      "/usr/sbin/ip addr show"
-    ]
-  }
-
-  # provisioner "local-exec" {
-  #   command = <<-EOF
-  #     ansible-playbook \
-  #       -i ansible/inventory.yaml \
-  #       --limit '${var.ci_ip},' \
-  #       ansible/playbook.yaml
-  #   EOF
-  # }
 }
 
 resource "ansible_host" "cloudinit_vm" {
