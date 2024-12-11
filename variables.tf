@@ -2,15 +2,20 @@ variable "proxmox_api_url" {
   type = string
 }
 
-variable "proxmox_api_token_id" {
+variable "proxmox_api_token" {
   type      = string
   sensitive = true
 }
 
-variable "proxmox_api_token_secret" {
+variable "dnsmasq_api_url" {
   type      = string
   sensitive = true
 }
+
+variable "proxmox_node" {
+  type = string
+}
+
 
 variable "ssh_private_key_path" {
   type = string
@@ -20,74 +25,40 @@ variable "ssh_public_keys" {
   type = string
 }
 
-variable "deb11_vms" {
-  description = "Debian 11 (Bullseye) VMs"
+variable "vms" {
+  description = "Cloud-Init VMs"
   default     = {}
-  type        = map(object({
+  type = map(object({
     description = optional(string)
-    vcpus = optional(number)
-    memory = optional(number)
-    ip = string
-    extra_tags = optional(list(string))
+    pvi         = string
+    vcpus       = optional(number)
+    memory      = optional(number)
+    disk_size   = optional(number)
+    tags        = optional(list(string))
   }))
 }
 
-variable "deb12_vms" {
-  description = "Debian 12 (Bookworm) VMs"
+variable "vm_storage" {
+  type    = string
+  default = "truenas-vm-disks"
+}
+
+variable "cloudinit_storage" {
+  type    = string
+  default = "truenas-nfs"
+}
+
+variable "pvi_images" {
+  description = "Proxmox VM Images (PVI)"
   default     = {}
-  type        = map(object({
-    description = optional(string)
-    vcpus = optional(number)
-    memory = optional(number)
-    ip = string
-    extra_tags = optional(list(string))
+  type = map(object({
+    url      = string
+    filename = string
+    ci-type  = string
   }))
 }
 
-variable "el8_vms" {
-  description = "EL8-compatible VMs"
-  default     = {}
-  type        = map(object({
-    description = optional(string)
-    vcpus = optional(number)
-    memory = optional(number)
-    ip = string
-    extra_tags = optional(list(string))
-  }))
-}
-
-variable "el9_vms" {
-  description = "EL9-compatible VMs"
-  default     = {}
-  type        = map(object({
-    description = optional(string)
-    vcpus = optional(number)
-    memory = optional(number)
-    ip = string
-    extra_tags = optional(list(string))
-  }))
-}
-
-variable "ubuntu22_vms" {
-  description = "Ubuntu 22.04 (Jammy) VMs"
-  default     = {}
-  type        = map(object({
-    description = optional(string)
-    vcpus = optional(number)
-    memory = optional(number)
-    ip = string
-    extra_tags = optional(list(string))
-  }))
-}
-
-variable "ubuntu24_vms" {
-  description = "Ubuntu 24.04 (Noble) VMs"
-  default     = {}
-  type        = map(object({
-    description = optional(string)
-    vcpus = optional(number)
-    memory = optional(number)
-    ip = string
-    extra_tags = optional(list(string))
-  }))
+variable "pvi_storage" {
+  type    = string
+  default = "truenas-nfs"
 }

@@ -1,35 +1,49 @@
 variable "name" {
-  description = "VM name"
+  description = "VM hostname"
   type        = string
 }
 
 variable "description" {
-  type = string
+  description = "Human-readable description to be added on the VM metadata"
+  type        = string
 }
 
 variable "tags" {
-  type    = list(string)
-  default = []
+  description = "List of tags to be added on the VM"
+  type        = list(string)
+  default     = []
 }
 
-variable "template" {
-  type    = string
-  default = "rocky-9-x64-ci-template"
+variable "pvi_id" {
+  description = "The Proxmox VM Image (PVI) ID to create the VM from"
+  type        = string
 }
 
 variable "vcpus" {
-  type    = number
-  default = 1
+  description = "The number of CPU cores to be assigned to the VM"
+  type        = number
+  default     = 1
 }
 
 variable "memory" {
-  type    = number
-  default = 1024
+  description = "The VM RAM memory size in MB"
+  type        = number
+  default     = 1024
 }
 
-variable "hagroup" {
+variable "disk_size" {
+  description = "The VM disk size in GB"
+  type        = number
+  default     = 10
+}
+
+variable "disk_storage" {
   type = string
-  default = "terraform-ha-group"
+}
+
+variable "pve_node" {
+  description = "Proxmox node to assign the VM to"
+  type        = string
 }
 
 variable "scsi_controller" {
@@ -37,9 +51,18 @@ variable "scsi_controller" {
   default = "virtio-scsi-pci"
 }
 
+variable "network_bridge" {
+  type    = string
+  default = "vmbr0"
+}
+
 variable "nic_model" {
   type    = string
   default = "virtio"
+}
+
+variable "ci_storage" {
+  type = string
 }
 
 variable "ci_username" {
@@ -47,29 +70,8 @@ variable "ci_username" {
   default = "ansible"
 }
 
-variable "ci_password" {
-  type      = string
-  default   = null
-  sensitive = true
-  nullable  = true
-}
-
 variable "ci_ssh_public_keys" {
   type = string
-}
-
-variable "ci_ip" {
-  type = string
-}
-
-variable "ci_netmask" {
-  type    = number
-  default = 24
-}
-
-variable "ci_gateway" {
-  type    = string
-  default = "192.168.11.1"
 }
 
 variable "ci_dns_server" {
@@ -82,21 +84,10 @@ variable "ci_domain" {
   default = "home.gringolito.com"
 }
 
-variable "ci_wait" {
-  type    = number
-  default = 30
+variable "ci_type" {
+  type = string
 }
 
 variable "ssh_private_key_path" {
   type = string
-}
-
-variable "ansible_groups" {
-  type    = list(string)
-  default = []
-}
-
-variable "ansible_custom_vars" {
-  type    = map(any)
-  default = {}
 }

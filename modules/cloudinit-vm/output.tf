@@ -1,23 +1,19 @@
+output "ipv4-address" {
+  value       = [for ip in local.vm_networking[local.first_interface].ipv4_addresses : ip]
+  description = "IPv4 addresses for the eth0 interface"
+}
+
+output "ipv6-address" {
+  value       = [for ip in local.vm_networking[local.first_interface].ipv6_addresses : ip]
+  description = "IPv6 addresses for the eth0 interface"
+}
+
 output "mac-address" {
-  value = proxmox_vm_qemu.cloudinit_vm.network[0].macaddr
+  value       = local.mac_address
+  description = "MAC address for the eth0 interface"
 }
 
-output "ip-address" {
-  value = proxmox_vm_qemu.cloudinit_vm.default_ipv4_address
-}
-
-output "cpus" {
-  value = proxmox_vm_qemu.cloudinit_vm.cores
-}
-
-output "memory" {
-  value = proxmox_vm_qemu.cloudinit_vm.memory
-}
-
-output "tags" {
-  value = proxmox_vm_qemu.cloudinit_vm.tags
-}
-
-output "ansible-groups" {
-  value = join(" ", ansible_host.cloudinit_vm.groups)
+output "vm-networking" {
+  value       = local.vm_networking
+  description = "Full networking configuration"
 }

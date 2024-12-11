@@ -1,101 +1,41 @@
-module "deb11_cloudinit_vms" {
-  source = "./modules/cloudinit-vm"
-
-  template = "debian-11-x64-ci-template"
-  ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
-
-  for_each = var.deb11_vms
-  # name = "${each.key}.deb11"
-  name = each.key
-  description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
-  tags = each.value.extra_tags != null ? concat(["deb11"], each.value.extra_tags) : ["deb11"]
+resource "proxmox_virtual_environment_download_file" "pvi" {
+  for_each     = var.pvi_images
+  content_type = "iso"
+  datastore_id = var.pvi_storage
+  node_name    = var.proxmox_node
+  url          = each.value.url
+  file_name    = each.value.filename
+  overwrite    = true
 }
 
-module "deb12_cloudinit_vms" {
-  source = "./modules/cloudinit-vm"
+resource "proxmox_virtual_environment_hagroup" "terraform" {
+  group = "terraform-ha-group"
 
-  template = "debian-12-x64-ci-template"
-  ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
+  nodes = {
+    "Beelink-U95-01"  = 1
+    "Lenovo-M920q-02" = 2
+    "Lenovo-M920q-01" = 3
+  }
 
-  for_each = var.deb12_vms
-  # name = "${each.key}.deb12"
-  name = each.key
-  description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
-  tags = each.value.extra_tags != null ? concat(["deb12"], each.value.extra_tags) : ["deb12"]
+  no_failback = true
 }
 
-module "el8_cloudinit_vms" {
+module "cloudinit_vms" {
   source = "./modules/cloudinit-vm"
 
-  template = "rocky-8-x64-ci-template"
   ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
+  ci_ssh_public_keys   = var.ssh_public_keys
+  pve_node             = var.proxmox_node
+  disk_storage         = var.vm_storage
+  ci_storage           = var.cloudinit_storage
 
-  for_each = var.el8_vms
-  # name = "${each.key}.el8"
-  name = each.key
+  for_each    = var.vms
+  name        = each.key
   description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
-  tags = each.value.extra_tags != null ? concat(["el8"], each.value.extra_tags) : ["el8"]
-}
-
-module "el9_cloudinit_vms" {
-  source = "./modules/cloudinit-vm"
-
-  template = "rocky-9-x64-ci-template"
-  ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
-
-  for_each = var.el9_vms
-  # name = "${each.key}.el9"
-  name = each.key
-  description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
-  tags = each.value.extra_tags != null ? concat(["el9"], each.value.extra_tags) : ["el9"]
-}
-
-module "ubuntu22_cloudinit_vms" {
-  source = "./modules/cloudinit-vm"
-
-  template = "ubuntu-22.04-x64-ci-template"
-  ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
-
-  for_each = var.ubuntu22_vms
-  # name = "${each.key}.ubuntu22"
-  name = each.key
-  description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
-  tags = each.value.extra_tags != null ? concat(["ubuntu22"], each.value.extra_tags) : ["ubuntu22"]
-}
-
-module "ubuntu24_cloudinit_vms" {
-  source = "./modules/cloudinit-vm"
-
-  template = "ubuntu-24.04-x64-ci-template"
-  ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
-
-  for_each = var.ubuntu24_vms
-  # name = "${each.key}.ubuntu24"
-  name = each.key
-  description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
-  tags = each.value.extra_tags != null ? concat(["ubuntu24"], each.value.extra_tags) : ["ubuntu24"]
+  vcpus       = each.value.vcpus
+  memory      = each.value.memory
+  disk_size   = each.value.disk_size
+  pvi_id      = lookup(proxmox_virtual_environment_download_file.pvi, each.value.pvi).id
+  ci_type     = lookup(var.pvi_images, each.value.pvi).ci-type
+  tags        = each.value.tags != null ? concat([each.value.pvi], each.value.tags) : [each.value.pvi]
 }
