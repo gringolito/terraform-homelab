@@ -1,0 +1,2 @@
+---
+kubernetes_load_balancer_type: purelb

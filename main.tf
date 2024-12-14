@@ -1,31 +1,41 @@
-module "el7_cloudinit_vms" {
-  source = "./modules/cloudinit-vm"
-
-  template = "centos-7-x64-ci-template"
-  ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
-  ci_wait = 90
-
-  for_each = var.el7_vms
-  name = each.key
-  description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
-  ansible_groups = [ "centos_7" ]
+resource "proxmox_virtual_environment_download_file" "pvi" {
+  for_each     = var.pvi_images
+  content_type = "iso"
+  datastore_id = var.pvi_storage
+  node_name    = var.proxmox_node
+  url          = each.value.url
+  file_name    = each.value.filename
+  overwrite    = true
 }
 
-module "el9_cloudinit_vms" {
+resource "proxmox_virtual_environment_hagroup" "terraform" {
+  group = "terraform-ha-group"
+
+  nodes = {
+    "Beelink-U95-01"  = 1
+    "Lenovo-M920q-02" = 2
+    "Lenovo-M920q-01" = 3
+  }
+
+  no_failback = true
+}
+
+module "cloudinit_vms" {
   source = "./modules/cloudinit-vm"
 
-  template = "rocky-9-x64-ci-template"
   ssh_private_key_path = var.ssh_private_key_path
-  ci_ssh_public_keys = var.ssh_public_keys
+  ci_ssh_public_keys   = var.ssh_public_keys
+  pve_node             = var.proxmox_node
+  disk_storage         = var.vm_storage
+  ci_storage           = var.cloudinit_storage
 
-  for_each = var.el9_vms
-  name = each.key
+  for_each    = var.vms
+  name        = each.key
   description = each.value.description
-  vcpus = each.value.vcpus
-  memory = each.value.memory
-  ci_ip = each.value.ip
+  vcpus       = each.value.vcpus
+  memory      = each.value.memory
+  disk_size   = each.value.disk_size
+  pvi_id      = lookup(proxmox_virtual_environment_download_file.pvi, each.value.pvi).id
+  ci_type     = lookup(var.pvi_images, each.value.pvi).ci-type
+  tags        = each.value.tags != null ? concat([each.value.pvi], each.value.tags) : [each.value.pvi]
 }

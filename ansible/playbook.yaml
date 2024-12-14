@@ -1,0 +1,22 @@
+---
+- name: Enable EPEL repository
+  hosts:
+    - el8
+    - el9
+  become: true
+  roles:
+    - geerlingguy.repo-epel
+
+- name: Common customizations
+  hosts: all
+  become: true
+  tasks:
+    - name: Install common packages
+      ansible.builtin.package:
+        name: "{{ extra_packages }}"
+        state: present
+
+- name: Install Kubernetes (k8s) cluster
+  hosts: k8s
+  roles:
+    - kubernetes

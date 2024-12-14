@@ -2,15 +2,20 @@ variable "proxmox_api_url" {
   type = string
 }
 
-variable "proxmox_api_token_id" {
+variable "proxmox_api_token" {
   type      = string
   sensitive = true
 }
 
-variable "proxmox_api_token_secret" {
+variable "dnsmasq_api_url" {
   type      = string
   sensitive = true
 }
+
+variable "proxmox_node" {
+  type = string
+}
+
 
 variable "ssh_private_key_path" {
   type = string
@@ -20,14 +25,40 @@ variable "ssh_public_keys" {
   type = string
 }
 
-variable "el7_vms" {
-  description = "EL7-compatible VMs"
+variable "vms" {
+  description = "Cloud-Init VMs"
   default     = {}
-  type        = map(any)
+  type = map(object({
+    description = optional(string)
+    pvi         = string
+    vcpus       = optional(number)
+    memory      = optional(number)
+    disk_size   = optional(number)
+    tags        = optional(list(string))
+  }))
 }
 
-variable "el9_vms" {
-  description = "EL9-compatible VMs"
+variable "vm_storage" {
+  type    = string
+  default = "truenas-vm-disks"
+}
+
+variable "cloudinit_storage" {
+  type    = string
+  default = "truenas-nfs"
+}
+
+variable "pvi_images" {
+  description = "Proxmox VM Images (PVI)"
   default     = {}
-  type        = map(any)
+  type = map(object({
+    url      = string
+    filename = string
+    ci-type  = string
+  }))
+}
+
+variable "pvi_storage" {
+  type    = string
+  default = "truenas-nfs"
 }

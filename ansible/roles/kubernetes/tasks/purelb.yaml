@@ -1,0 +1,44 @@
+---
+- name: Add PureLB helm repository
+  kubernetes.core.helm_repository:
+    name: purelb
+    repo_url: https://gitlab.com/api/v4/projects/20400619/packages/helm/stable
+  tags:
+    - purelb
+
+- name: Install PureLB helm chart
+  kubernetes.core.helm:
+    name: purelb
+    chart_ref: purelb/purelb
+    release_namespace: purelb
+    create_namespace: true
+    set_values:
+      - value: "lbnodeagent.sendgarp=true"
+  tags:
+    - purelb
+
+- name: Configure PureLB ServiceGroup pools
+  kubernetes.core.k8s:
+    template: templates/purelb-service-group.j2
+    apply: true
+    state: present
+  tags:
+    - purelb
+
+- name: Configure Calico's IPPool for PureLB
+  kubernetes.core.k8s:
+    template: templates/purelb-calico-ip-pool.j2
+    apply: true
+    state: present
+  when: kubernetes_pod_network.cni == "calico"
+  tags:
+    - purelb
+
+- name: Configure Calico's BGP for PureLB
+  kubernetes.core.k8s:
+    template: templates/purelb-calico-bgp-configuration.j2
+    apply: true
+    state: present
+  when: kubernetes_pod_network.cni == "calico"
+  tags:
+    - purelb

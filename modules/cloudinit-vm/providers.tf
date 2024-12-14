@@ -1,15 +1,18 @@
 terraform {
-  required_version = ">= 0.14"
+  required_version = ">= 1.9.0"
 
   required_providers {
     proxmox = {
-      source = "telmate/proxmox"
-      version = "~> 2.9.14"
+      source = "bpg/proxmox"
     }
 
     ansible = {
       source  = "ansible/ansible"
-      version = "~> 1.0.0"
+      version = "~> 1.3.0"
+    }
+
+    dnsmasq = {
+      source = "gringolito/dnsmasq"
     }
   }
 }

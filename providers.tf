@@ -1,31 +1,27 @@
 terraform {
-  required_version = ">= 0.14"
+  required_version = ">= 1.9.0"
 
   required_providers {
     proxmox = {
-      source = "telmate/proxmox"
-      version = "~> 2.9.14"
+      source = "bpg/proxmox"
     }
 
-    ansible = {
-      source  = "ansible/ansible"
-      version = "~> 1.0.0"
+    dnsmasq = {
+      source = "gringolito/dnsmasq"
     }
   }
 }
 
 provider "proxmox" {
-  pm_api_url          = var.proxmox_api_url
-  pm_api_token_id     = var.proxmox_api_token_id
-  pm_api_token_secret = var.proxmox_api_token_secret
+  endpoint  = var.proxmox_api_url
+  api_token = var.proxmox_api_token
 
-  pm_tls_insecure = true
-
-  pm_debug      = true
-  pm_log_enable = true
-  pm_log_file   = "terraform-plugin-proxmox.log"
-  pm_log_levels = {
-    _default    = "debug"
-    _capturelog = ""
+  ssh {
+    agent    = true
+    username = "root"
   }
+}
+
+provider "dnsmasq" {
+  api_url = var.dnsmasq_api_url
 }

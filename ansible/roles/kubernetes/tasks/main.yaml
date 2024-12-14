@@ -1,0 +1,99 @@
+---
+- name: Load required kernel modules
+  community.general.modprobe:
+    name: "{{ item }}"
+    state: present
+    persistent: present
+  with_items:
+    - br_netfilter
+    - nf_conntrack
+  become: true
+
+- name: Enable IPv4 forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    sysctl_set: true
+  become: true
+
+- name: Only answer ARP requests for addresses on the interface on which it receives the request
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: true
+  with_items:
+    - name: net.ipv4.conf.all.arp_ignore
+      value: "1"
+    - name: net.ipv4.conf.all.arp_announce
+      value: "2"
+  become: true
+
+- name: Increase conntrack table limits
+  ansible.posix.sysctl:
+    name: net.netfilter.nf_conntrack_max
+    value: "1000000"
+    state: present
+    sysctl_set: true
+  become: true
+
+- name: Configure NetworkManager to not manage Calico interfaces
+  ansible.builtin.copy:
+    src: files/network-manager-calico.conf
+    dest: /etc/NetworkManager/conf.d/calico.conf
+    mode: "0644"
+  become: true
+  when: kubernetes_pod_network.cni == "calico"
+  notify: Restart NetworkManager
+
+- name: Install kubernetes
+  ansible.builtin.import_role:
+    name: geerlingguy.kubernetes
+  become: true
+
+- name: Configure cluster resources
+  when: kubernetes_role == 'control_plane'
+  block:
+    - name: Make sure that ~/.kube directory exists
+      ansible.builtin.file:
+        path: .kube
+        state: directory
+        mode: "0750"
+
+    - name: Configure kubectl for the current user
+      ansible.builtin.file:
+        src: /etc/kubernetes/admin.conf
+        dest: .kube/config
+        state: link
+
+    - name: Install Helm
+      ansible.builtin.import_role:
+        name: geerlingguy.helm
+
+    - name: Install git
+      ansible.builtin.package:
+        name: git
+        state: present
+      become: true
+
+    - name: Install Helm Diff plugin
+      kubernetes.core.helm_plugin:
+        plugin_path: "https://github.com/databus23/helm-diff"
+        state: present
+
+    - name: Install Python3 kubernetes dependencies
+      ansible.builtin.package:
+        name: python3-kubernetes
+        state: present
+      become: true
+
+    - name: Install PureLB load balancer
+      ansible.builtin.include_tasks: purelb.yaml
+      when: kubernetes_load_balancer_type == 'purelb'
+
+    - name: Install Portainer Agent
+      kubernetes.core.k8s:
+        src: https://downloads.portainer.io/ce2-19/portainer-agent-k8s-lb.yaml
+        apply: true
+        state: present
