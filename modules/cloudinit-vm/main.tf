@@ -44,7 +44,14 @@ locals {
       - systemctl enable --now qemu-guest-agent.service
     EOF
 
-  vm_networking     = { for i, id in proxmox_virtual_environment_vm.cloudinit_vm.network_interface_names : id => { mac_address = proxmox_virtual_environment_vm.cloudinit_vm.mac_addresses[i], ipv4_addresses = proxmox_virtual_environment_vm.cloudinit_vm.ipv4_addresses[i], ipv6_addresses = proxmox_virtual_environment_vm.cloudinit_vm.ipv6_addresses[i] } if id != "lo" }
+  vm_networking = {
+    for i, id in proxmox_virtual_environment_vm.cloudinit_vm.network_interface_names :
+    id => {
+      mac_address    = proxmox_virtual_environment_vm.cloudinit_vm.mac_addresses[i],
+      ipv4_addresses = proxmox_virtual_environment_vm.cloudinit_vm.ipv4_addresses[i],
+      ipv6_addresses = proxmox_virtual_environment_vm.cloudinit_vm.ipv6_addresses[i]
+    } if id != "lo"
+  }
   first_interface   = "eth0"
   ip_address        = element(local.vm_networking[local.first_interface].ipv4_addresses, 0)
   mac_address       = lower(local.vm_networking[local.first_interface].mac_address)

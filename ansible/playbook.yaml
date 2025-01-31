@@ -3,6 +3,8 @@
   hosts:
     - el8
     - el9
+    - rocky_8
+    - rocky_9
   become: true
   roles:
     - geerlingguy.repo-epel

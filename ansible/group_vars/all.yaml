@@ -29,5 +29,5 @@ helm_version: v3.16.2
 # local tasks - PureLB
 purelb_v4pools:
   - subnet: 192.168.11.0/24
-    pool: 192.168.11.64/26
+    pool: 192.168.11.96/27
     name: home
