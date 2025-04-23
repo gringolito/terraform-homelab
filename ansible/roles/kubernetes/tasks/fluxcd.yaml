@@ -1,0 +1,36 @@
+---
+- name: Check required variables
+  ansible.builtin.fail:
+    msg: Missing required variable `kubernetes_fluxcd_bootstrap_config`. Please set it on your inventory.
+  when: kubernetes_fluxcd_bootstrap_config is not defined
+
+- name: Install Flux CLI
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -s https://fluxcd.io/install.sh | bash -s
+  become: true
+  args:
+    creates: /usr/bin/flux
+
+- name: Check FluxCD prerequisites
+  ansible.builtin.command: flux check --pre
+  changed_when: false
+
+- name: Bootstrap FluxCD into cluster
+  ansible.builtin.shell: |
+    export GITEA_TOKEN="{{ kubernetes_fluxcd_bootstrap_config.gitea_token }}"
+    flux bootstrap gitea \
+      --token-auth \
+      --hostname={{ kubernetes_fluxcd_bootstrap_config.git_hostname }} \
+      --owner={{ kubernetes_fluxcd_bootstrap_config.repository_owner }} \
+      --repository={{ kubernetes_fluxcd_bootstrap_config.repository_name }} \
+      --branch={{ kubernetes_fluxcd_bootstrap_config.tracking_branch | default("master") }} \
+      --path=clusters/{{ kubernetes_fluxcd_bootstrap_config.cluster_name }} \
+      --components-extra={{ kubernetes_fluxcd_bootstrap_config.components_extra | default("", true) }} \
+      --private={{ kubernetes_fluxcd_bootstrap_config.private | default(false) | string }} \
+      --personal={{ kubernetes_fluxcd_bootstrap_config.personal | default(false) | string }}
+  changed_when: true
+
+- name: Check FluxCD bootstrap
+  ansible.builtin.command: flux check
+  changed_when: false

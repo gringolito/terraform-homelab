@@ -1,2 +1,5 @@
 ---
 kubernetes_load_balancer_type: purelb
+kubernetes_purelb_version: v0.11.0
+kubernetes_portainer_agent_version: ce2-21
+kubernetes_fluxcd_bootstrap: false
