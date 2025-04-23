@@ -7,6 +7,7 @@ extra_packages:
   - htop
   - iotop
   - setroubleshoot
+  - jq
 
 # geerlingguy.containerd
 containerd_config_cgroup_driver_systemd: true
@@ -48,3 +49,57 @@ kubernetes_fluxcd_bootstrap_config:
   tracking_branch: master
   cluster_name: home
   personal: true
+
+# Zabbix
+zabbix_server_fqdn: zabbix.home.gringolito.com
+zabbix_server_ipv4_address: 192.168.11.202
+zabbix_offload_dns_lookups: true
+
+# Zabbix Agent installation
+zabbix_agent2: true
+zabbix_agent_version: 7.0
+zabbix_agent_install_agent_only: true
+
+# Zabbix Agent configuration
+zabbix_agent_server: '{{ zabbix_server_fqdn }}'
+zabbix_agent_serveractive: '{{ zabbix_server_fqdn }}'
+zabbix_agent_hostname: '{{ inventory_hostname_short }}'
+zabbix_agent_chassis: true
+
+# Zabbix Server host configuration
+ansible_zabbix_url_path: ''
+zabbix_api_server_host: zabbix.gringolito.com
+zabbix_api_use_ssl: true
+zabbix_api_validate_certs: true
+ansible_zabbix_auth_key: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          34353133376663326165646333636634383262376338363631313834356362633033386365343862
+          6433656164623465383432376262303731303965663764640a316639653032326239633139363532
+          63626663343331393263366561313533306632646462616231633330383435636631373764666532
+          3136666163643065350a303136653337393562656633656132366565303262663039613034643563
+          62626336643535336530663863633336393332366139656363303866613566366663333666633933
+          33626364316337303836623065373631366532656334386638343234366232313838643333386331
+          30636431626661376130373365666237353935333438326665663136313335383466393333323232
+          31306233663233623464
+zabbix_api_create_hostgroup: true
+zabbix_api_create_hosts: true
+zabbix_agent_host_state: present
+zabbix_agent_host_update: true
+zabbix_agent_inventory_mode: automatic
+zabbix_agent_dont_detect_ip: true
+zabbix_agent_tlsconnect: unencrypted
+zabbix_agent_tlsaccept: unencrypted
+zabbix_agent_tlspskfile: null
+zabbix_host_groups:
+  - Linux servers
+  - Terraform VMs
+zabbix_agent_link_templates:
+  - Linux by Zabbix agent
+zabbix_useuip: 0
+zabbix_agent_interfaces:
+  - type: 1
+    main: 1
+    useip: '{{ zabbix_useuip }}'
+    ip: ''
+    dns: '{{ ansible_fqdn }}'
+    port: '{{ zabbix_agent_listenport }}'

@@ -22,3 +22,19 @@
   hosts: k8s
   roles:
     - kubernetes
+
+- name: Set-up Zabbix agent for monitoring
+  hosts: all
+  tags:
+    - zabbix
+
+  roles:
+    - community.zabbix.zabbix_agent
+
+  tasks:
+    - name: Add Zabbix host on /etc/hosts for offloading DNS lookups
+      ansible.builtin.lineinfile:
+        dest: /etc/hosts
+        line: '{{ zabbix_server_ipv4_address }} {{ zabbix_server_fqdn }}'
+        state: '{{ "present" if zabbix_offload_dns_lookups is true else "absent" }}'
+      become: true
