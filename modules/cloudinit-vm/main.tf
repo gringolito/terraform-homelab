@@ -19,6 +19,7 @@ locals {
       - htop
     runcmd:
       - systemctl enable --now qemu-guest-agent.service
+      - systemctl reload systemd-networkd.service
     EOF
 
   redhat_ci_config = <<-EOF
@@ -42,6 +43,7 @@ locals {
       - htop
     runcmd:
       - systemctl enable --now qemu-guest-agent.service
+      - systemctl reload systemd-networkd.service
     EOF
 
   vm_networking = {
@@ -62,7 +64,7 @@ locals {
 resource "proxmox_virtual_environment_vm" "cloudinit_vm" {
   node_name     = var.pve_node
   name          = var.name
-  description   = "${var.description}\n\nManaged by Terraform"
+  description   = try("${var.description}\n\nManaged by Terraform", "Managed by Terraform")
   tags          = var.tags
   migrate       = true
   machine       = "q35"
@@ -157,9 +159,9 @@ resource "ansible_host" "cloudinit_vm" {
   }
 }
 
-# Create the static DHCP lease reservation
-resource "dnsmasq_dhcp_static_host" "cloudinit_vm" {
-  mac_address = local.mac_address
-  ip_address  = local.ip_address
-  hostname    = var.name
-}
+# # Create the static DHCP lease reservation
+# resource "dnsmasq_dhcp_static_host" "cloudinit_vm" {
+#   mac_address = local.mac_address
+#   ip_address  = local.ip_address
+#   hostname    = var.name
+# }

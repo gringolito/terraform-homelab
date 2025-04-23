@@ -29,13 +29,14 @@ module "cloudinit_vms" {
   disk_storage         = var.vm_storage
   ci_storage           = var.cloudinit_storage
 
-  for_each    = var.vms
-  name        = each.key
-  description = each.value.description
-  vcpus       = each.value.vcpus
-  memory      = each.value.memory
-  disk_size   = each.value.disk_size
-  pvi_id      = lookup(proxmox_virtual_environment_download_file.pvi, each.value.pvi).id
-  ci_type     = lookup(var.pvi_images, each.value.pvi).ci-type
-  tags        = each.value.tags != null ? concat([each.value.pvi], each.value.tags) : [each.value.pvi]
+  for_each       = var.vms
+  name           = each.key
+  description    = each.value.description
+  vcpus          = each.value.vcpus
+  memory         = each.value.memory
+  network_bridge = each.value.network
+  disk_size      = each.value.disk_size
+  pvi_id         = lookup(proxmox_virtual_environment_download_file.pvi, each.value.pvi).id
+  ci_type        = lookup(var.pvi_images, each.value.pvi).ci-type
+  tags           = each.value.tags != null ? concat([each.value.pvi], each.value.tags) : [each.value.pvi]
 }
