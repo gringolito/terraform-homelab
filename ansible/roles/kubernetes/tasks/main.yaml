@@ -92,8 +92,6 @@
       ansible.builtin.include_tasks: purelb.yaml
       when: kubernetes_load_balancer_type == 'purelb'
 
-    - name: Install Portainer Agent
-      kubernetes.core.k8s:
-        src: https://downloads.portainer.io/ce2-19/portainer-agent-k8s-lb.yaml
-        apply: true
-        state: present
+    - name: Bootstrap FluxCD
+      ansible.builtin.include_tasks: fluxcd.yaml
+      when: kubernetes_fluxcd_bootstrap

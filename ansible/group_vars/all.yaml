@@ -13,7 +13,7 @@ containerd_config_cgroup_driver_systemd: true
 
 # geerlingguy.kubernetes
 kubernetes_allow_pods_on_control_plane: false
-kubernetes_version: "1.31"
+kubernetes_version: "1.32"
 # kubernetes_calico_manifest_file: https://raw.githubusercontent.com/projectcalico/calico/refs/tags/v3.28.2/manifests/calico.yaml
 # kubernetes_pod_network:
   # Flannel CNI.
@@ -24,10 +24,27 @@ kubernetes_version: "1.31"
   # cidr: 10.24.0.0/16
 
 # geerlingguy.helm
-helm_version: v3.16.2
+helm_version: v3.17.0
 
 # local tasks - PureLB
 purelb_v4pools:
   - subnet: 192.168.11.0/24
     pool: 192.168.11.96/27
     name: home
+
+kubernetes_fluxcd_bootstrap: true
+kubernetes_fluxcd_bootstrap_config:
+  gitea_token: !vault |
+          $ANSIBLE_VAULT;1.1;AES256
+          39313163373935386662333462633130646534383735643732303538653461303638306565356238
+          6430666637653463333230373062633339303631393664310a396332633138626332346362643433
+          39623665663363343336653461613766633239643138346232666132333133623537353233613164
+          6663396366336630650a333262343334373535326265323839326533613133663464386339646364
+          64363437636431333133643939303564613236353931356432336531316334623238646561623730
+          3563303964393432363832376338336564643434613736303930
+  git_hostname: git.gringolito.com
+  repository_owner: gringolito
+  repository_name: flux-cd
+  tracking_branch: master
+  cluster_name: home
+  personal: true

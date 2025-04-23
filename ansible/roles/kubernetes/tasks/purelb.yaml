@@ -10,6 +10,7 @@
   kubernetes.core.helm:
     name: purelb
     chart_ref: purelb/purelb
+    chart_version: "{{ kubernetes_purelb_version }}"
     release_namespace: purelb
     create_namespace: true
     set_values:
