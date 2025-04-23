@@ -33,6 +33,7 @@ variable "vms" {
     pvi         = string
     vcpus       = optional(number)
     memory      = optional(number)
+    network     = optional(string)
     disk_size   = optional(number)
     tags        = optional(list(string))
   }))
