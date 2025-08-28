@@ -1,10 +1,10 @@
 output "ipv4-address" {
-  value       = [for ip in local.vm_networking[local.first_interface].ipv4_addresses : ip]
+  value       = try([for ip in local.vm_networking[local.first_interface].ipv4_addresses : ip], [])
   description = "IPv4 addresses for the eth0 interface"
 }
 
 output "ipv6-address" {
-  value       = [for ip in local.vm_networking[local.first_interface].ipv6_addresses : ip]
+  value       = try([for ip in local.vm_networking[local.first_interface].ipv6_addresses : ip], [])
   description = "IPv6 addresses for the eth0 interface"
 }
 

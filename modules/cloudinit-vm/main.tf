@@ -55,8 +55,8 @@ locals {
     } if id != "lo"
   }
   first_interface   = "eth0"
-  ip_address        = element(local.vm_networking[local.first_interface].ipv4_addresses, 0)
-  mac_address       = lower(local.vm_networking[local.first_interface].mac_address)
+  ip_address        = try(element(local.vm_networking[local.first_interface].ipv4_addresses, 0), null)
+  mac_address       = try(lower(local.vm_networking[local.first_interface].mac_address), null)
   default_disk_size = 10
 }
 
