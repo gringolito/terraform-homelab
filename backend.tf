@@ -2,7 +2,7 @@ terraform {
   backend "s3" {
     bucket  = "terraform-state"
     key     = "terraform-homelab.tfstate"
-    region  = "br-homelab-01"
+    region  = "br-home-1"
     profile = "homelab"
     endpoints = {
       s3 = "http://s3.home.gringolito.com:9000"
