@@ -39,4 +39,5 @@ module "cloudinit_vms" {
   pvi_id         = lookup(proxmox_virtual_environment_download_file.pvi, each.value.pvi).id
   ci_type        = lookup(var.pvi_images, each.value.pvi).ci-type
   tags           = each.value.tags != null ? concat([each.value.pvi], each.value.tags) : [each.value.pvi]
+  power_on       = each.value.power_on
 }

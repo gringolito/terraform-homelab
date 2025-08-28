@@ -69,6 +69,8 @@ resource "proxmox_virtual_environment_vm" "cloudinit_vm" {
   migrate       = true
   machine       = "q35"
   scsi_hardware = var.scsi_controller
+  on_boot       = var.power_on
+  started       = var.power_on
 
   agent {
     enabled = true

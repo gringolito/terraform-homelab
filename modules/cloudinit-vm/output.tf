@@ -17,3 +17,8 @@ output "vm-networking" {
   value       = local.vm_networking
   description = "Full networking configuration"
 }
+
+output "vm-power-on-state" {
+  value       = proxmox_virtual_environment_vm.cloudinit_vm.started
+  description = "VM power-on state"
+}

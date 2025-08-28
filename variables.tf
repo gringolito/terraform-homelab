@@ -36,6 +36,7 @@ variable "vms" {
     network     = optional(string)
     disk_size   = optional(number)
     tags        = optional(list(string))
+    power_on    = optional(bool)
   }))
 }
 
