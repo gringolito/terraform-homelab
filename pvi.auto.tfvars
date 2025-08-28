@@ -19,6 +19,11 @@ pvi_images = {
     filename = "rocky-9-genericcloud-amd64.img"
     ci-type  = "redhat"
   }
+  rocky-10 = {
+    url      = "https://dl.rockylinux.org/pub/rocky/10/images/x86_64/Rocky-10-GenericCloud-Base.latest.x86_64.qcow2"
+    filename = "rocky-10-genericcloud-amd64.img"
+    ci-type  = "redhat"
+  }
   almalinux-8 = {
     url      = "https://repo.almalinux.org/almalinux/8/cloud/x86_64/images/AlmaLinux-8-GenericCloud-latest.x86_64.qcow2"
     filename = "almalinux-8-genericcloud-amd64.img"
@@ -27,6 +32,11 @@ pvi_images = {
   almalinux-9 = {
     url      = "https://repo.almalinux.org/almalinux/9/cloud/x86_64/images/AlmaLinux-9-GenericCloud-latest.x86_64.qcow2"
     filename = "almalinux-9-genericcloud-amd64.img"
+    ci-type  = "redhat"
+  }
+  almalinux-10 = {
+    url      = "https://repo.almalinux.org/almalinux/10/cloud/x86_64/images/AlmaLinux-10-GenericCloud-latest.x86_64.qcow2"
+    filename = "almalinux-10-genericcloud-amd64.img"
     ci-type  = "redhat"
   }
 }
