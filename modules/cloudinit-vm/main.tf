@@ -119,6 +119,14 @@ resource "proxmox_virtual_environment_vm" "cloudinit_vm" {
     model  = var.nic_model
   }
 
+  dynamic "network_device" {
+    for_each = toset(var.extra_networks != null ? var.extra_networks : [])
+    content {
+      bridge = network_device.key
+      model  = var.nic_model
+    }
+  }
+
   operating_system {
     type = "l26"
   }

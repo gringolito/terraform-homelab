@@ -93,6 +93,11 @@ variable "ssh_private_key_path" {
 }
 
 variable "power_on" {
-  type = bool
+  type    = bool
   default = true
+}
+
+variable "extra_networks" {
+  type    = list(string)
+  default = []
 }

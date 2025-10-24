@@ -35,6 +35,7 @@ module "cloudinit_vms" {
   vcpus          = each.value.vcpus
   memory         = each.value.memory
   network_bridge = each.value.network
+  extra_networks = each.value.extra_networks
   disk_size      = each.value.disk_size
   pvi_id         = lookup(proxmox_virtual_environment_download_file.pvi, each.value.pvi).id
   ci_type        = lookup(var.pvi_images, each.value.pvi).ci-type
