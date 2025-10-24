@@ -8,18 +8,6 @@ resource "proxmox_virtual_environment_download_file" "pvi" {
   overwrite    = true
 }
 
-resource "proxmox_virtual_environment_hagroup" "terraform" {
-  group = "terraform-ha-group"
-
-  nodes = {
-    "Beelink-U95-01"  = 1
-    "Lenovo-M920q-02" = 2
-    "Lenovo-M920q-01" = 3
-  }
-
-  no_failback = true
-}
-
 module "cloudinit_vms" {
   source = "./modules/cloudinit-vm"
 
