@@ -127,6 +127,18 @@ resource "proxmox_virtual_environment_vm" "cloudinit_vm" {
     }
   }
 
+  dynamic "hostpci" {
+    for_each = toset(coalesce(var.gpu_passthrough, false) ? [var.gpu_mdev_device_type] : [])
+    content {
+      device  = "hostpci0"
+      mapping = var.gpu_mapping
+      mdev    = var.gpu_mdev_device_type
+      pcie    = true
+      rombar  = true
+      xvga    = false
+    }
+  }
+
   operating_system {
     type = "l26"
   }
@@ -138,7 +150,9 @@ resource "proxmox_virtual_environment_vm" "cloudinit_vm" {
 
   serial_device {}
 
-  vga {}
+  vga {
+    type = coalesce(var.gpu_passthrough, false) ? "serial0" : "std"
+  }
 
   lifecycle {
     ignore_changes = [node_name, disk[0].file_id, initialization, tpm_state]

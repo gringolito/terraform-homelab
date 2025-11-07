@@ -29,15 +29,16 @@ variable "vms" {
   description = "Cloud-Init VMs"
   default     = {}
   type = map(object({
-    description    = optional(string)
-    pvi            = string
-    vcpus          = optional(number)
-    memory         = optional(number)
-    network        = optional(string)
-    extra_networks = optional(list(string))
-    disk_size      = optional(number)
-    tags           = optional(list(string))
-    power_on       = optional(bool)
+    description     = optional(string)
+    pvi             = string
+    vcpus           = optional(number)
+    memory          = optional(number)
+    network         = optional(string)
+    extra_networks  = optional(list(string))
+    disk_size       = optional(number)
+    tags            = optional(list(string))
+    power_on        = optional(bool)
+    gpu_passthrough = optional(bool)
   }))
 }
 

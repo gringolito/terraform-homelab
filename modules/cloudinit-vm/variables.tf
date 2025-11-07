@@ -38,7 +38,8 @@ variable "disk_size" {
 }
 
 variable "disk_storage" {
-  type = string
+  description = "Storage pool or volume where the VM disk will be created (e.g. local-lvm, nfs-storage)"
+  type        = string
 }
 
 variable "pve_node" {
@@ -47,57 +48,87 @@ variable "pve_node" {
 }
 
 variable "scsi_controller" {
-  type    = string
-  default = "virtio-scsi-pci"
+  description = "SCSI controller model to attach to the VM"
+  type        = string
+  default     = "virtio-scsi-pci"
 }
 
 variable "network_bridge" {
-  type    = string
-  default = "vmbr0"
+  description = "Network bridge on the Proxmox host to attach the VM NIC(s) to"
+  type        = string
+  default     = "vmbr0"
 }
 
 variable "nic_model" {
-  type    = string
-  default = "virtio"
+  description = "Virtual NIC model presented to the VM (e.g. virtio, e1000)"
+  type        = string
+  default     = "virtio"
+}
+
+variable "gpu_passthrough" {
+  description = "Whether to enable GPU passthrough for this VM"
+  type        = bool
+  default     = false
+}
+
+variable "gpu_mapping" {
+  description = "Logical name or label used to map the GPU resource for passthrough"
+  type        = string
+  default     = "Intel-iGPU"
+}
+
+variable "gpu_mdev_device_type" {
+  description = "Mediated device (mdev) type to use when assigning shared GPU instances"
+  type        = string
+  default     = "i915-GVTg_V5_4"
 }
 
 variable "ci_storage" {
-  type = string
+  description = "Storage location to place cloud-init seed/iso or config (e.g. local, local-lvm)"
+  type        = string
 }
 
 variable "ci_username" {
-  type    = string
-  default = "ansible"
+  description = "Default user created by cloud-init on first boot"
+  type        = string
+  default     = "ansible"
 }
 
 variable "ci_ssh_public_keys" {
-  type = string
+  description = "SSH public key(s) injected via cloud-init for the default user (newline-separated)"
+  type        = string
 }
 
 variable "ci_dns_server" {
-  type    = string
-  default = "192.168.11.53"
+  description = "DNS server IP address to configure inside the VM via cloud-init"
+  type        = string
+  default     = "192.168.11.53"
 }
 
 variable "ci_domain" {
-  type    = string
-  default = "home.gringolito.com"
+  description = "Domain name to configure for the VM's hostname in cloud-init"
+  type        = string
+  default     = "home.gringolito.com"
 }
 
 variable "ci_type" {
-  type = string
+  description = "Type of cloud-init configuration type (redhat or debian)"
+  type        = string
 }
 
 variable "ssh_private_key_path" {
-  type = string
+  description = "Path to the SSH private key used to connect to the VM with Ansible"
+  type        = string
 }
 
 variable "power_on" {
-  type    = bool
-  default = true
+  description = "Whether the VM should be powered on or not"
+  type        = bool
+  default     = true
 }
 
 variable "extra_networks" {
-  type    = list(string)
-  default = []
+  description = "List of additional network bridge names to attach as secondary NICs"
+  type        = list(string)
+  default     = []
 }
