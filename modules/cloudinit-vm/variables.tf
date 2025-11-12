@@ -102,7 +102,7 @@ variable "ci_ssh_public_keys" {
 variable "ci_dns_server" {
   description = "DNS server IP address to configure inside the VM via cloud-init"
   type        = string
-  default     = "192.168.11.53"
+  default     = "192.168.11.52"
 }
 
 variable "ci_domain" {
