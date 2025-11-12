@@ -7,15 +7,9 @@ variable "proxmox_api_token" {
   sensitive = true
 }
 
-variable "dnsmasq_api_url" {
-  type      = string
-  sensitive = true
-}
-
 variable "proxmox_node" {
   type = string
 }
-
 
 variable "ssh_private_key_path" {
   type = string

@@ -182,10 +182,3 @@ resource "ansible_host" "cloudinit_vm" {
     ansible_ssh_extra_args       = "-o StrictHostKeyChecking=no"
   }
 }
-
-# # Create the static DHCP lease reservation
-# resource "dnsmasq_dhcp_static_host" "cloudinit_vm" {
-#   mac_address = local.mac_address
-#   ip_address  = local.ip_address
-#   hostname    = var.name
-# }

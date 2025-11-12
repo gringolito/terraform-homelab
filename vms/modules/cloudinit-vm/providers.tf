@@ -10,9 +10,5 @@ terraform {
       source  = "ansible/ansible"
       version = "~> 1.3.0"
     }
-
-    dnsmasq = {
-      source = "gringolito/dnsmasq"
-    }
   }
 }

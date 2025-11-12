@@ -5,10 +5,6 @@ terraform {
     proxmox = {
       source = "bpg/proxmox"
     }
-
-    dnsmasq = {
-      source = "gringolito/dnsmasq"
-    }
   }
 }
 
@@ -20,8 +16,4 @@ provider "proxmox" {
     agent    = true
     username = "root"
   }
-}
-
-provider "dnsmasq" {
-  api_url = var.dnsmasq_api_url
 }
