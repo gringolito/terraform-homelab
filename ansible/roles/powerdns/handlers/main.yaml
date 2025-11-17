@@ -1,0 +1,10 @@
+---
+- name: Restart PowerDNS
+  ansible.builtin.systemd_service:
+    name: pdns
+    state: restarted
+
+- name: Check PowerDNS zones
+  ansible.builtin.command: pdnsutil zone check-all
+  changed_when: false
+  check_mode: false

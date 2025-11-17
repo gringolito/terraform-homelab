@@ -1,0 +1,6 @@
+---
+pihole_config_path: /etc/containers/storage/pihole/config
+pihole_dnsmasq_path: /etc/containers/storage/pihole/dnsmasq
+pihole_timezone: Etc/UTC
+pihole_web_password: ""
+pihole_container_shm_size: 128m

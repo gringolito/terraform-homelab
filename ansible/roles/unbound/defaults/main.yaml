@@ -1,0 +1,106 @@
+---
+# The verbosity level:
+# 0 - No verbosity, only errors.
+# 1 - Gives operational information.
+# 2 - Gives  detailed  operational  information including short information per query.
+# 3 - Gives query level information, output per query.
+# 4 - Gives algorithm level information.
+# 5 - Logs client identification for cache misses.
+unbound_verbosity: 1
+
+# Interface to use to connect to the network. This interface is listened to for queries from
+# clients, and answers to clients are given from it. Format: <IP address or interface name[@port]>
+unbound_listen_interfaces: ["127.0.0.1", "::1"]
+
+# The port number on which the server responds to queries.
+unbound_listen_port: 53
+
+# Networks allowed to make queries to this server that gives DNS answers.
+unbound_allowed_networks: [127.0.0.0/8]
+
+# Enable or disable whether UDP queries are answered or issued.
+unbound_do_udp: true
+
+# Enable or disable whether TCP queries are answered or issued.
+unbound_do_tcp: true
+
+# Enable or disable whether IPv4 queries are answered or issued.
+unbound_do_ipv4: true
+
+# Enable or disable whether IPv6 queries are answered or issued. If disabled, queries are not
+# answered on IPv6, and queries are not sent on IPv6 to the internet nameservers. With this option
+# you can disable the IPv6 transport for sending DNS traffic, it does not impact the contents of
+# the DNS traffic, which may have IPv4 (A) and IPv6 (AAAA) addresses in it.
+unbound_do_ipv6: true
+
+# If enabled, prefer IPv4 transport for sending DNS queries to internet nameservers.
+unbound_prefer_ipv4: false
+
+# If enabled, prefer IPv6 transport for sending DNS queries to internet nameservers.
+unbound_prefer_ipv6: false
+
+# If yes, cache hits on message cache elements that are on their last 10 percent of their TTL value
+# trigger a prefetch to keep the cache up to date. Turning it on gives about 10 percent more traffic
+# and load on the machine, but popular items do not expire from the cache.
+unbound_prefetch: true
+
+# If yes, fetch the DNSKEYs earlier in the validation process, when a DS record is encountered.
+# This lowers the latency of requests. It does use a little more CPU.
+unbound_prefetch_key: true
+
+# The number of threads to create to serve clients. Use 1 for no threading.
+unbound_num_threads: 1
+
+# Set the SO_RCVBUF socket option to get more buffer space on UDP port 53 incoming queries.
+unbound_so_rcvbuf: 1m
+
+# Time to live maximum for RRsets and messages in the cache. When the TTL expires, the cache item has expired.
+unbound_cache_max_ttl: 86400
+
+# Time to live minimum for RRsets and messages in the cache. If the minimum kicks in, the data is
+# cached for longer than the domain owner intended, and thus less queries are made to look up the data.
+unbound_cache_min_ttl: 0
+
+# Number of bytes size of the message cache.
+unbound_msg_cache_size: 64m
+
+# Number of bytes size of the RRset cache.
+unbound_rrset_cache_size: 128m
+
+# If enabled 'id.server' and 'hostname.bind' queries are REFUSED.
+unbound_hide_identity: true
+
+# If enabled 'version.server' and 'version.bind' queries are REFUSED.
+unbound_hide_version: true
+
+# Ensure no reverse queries to non-public IP ranges (RFC6303 4.2)
+unbound_private_addresses:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+  - 169.254.0.0/16
+  - fd00::/8
+  - fe80::/10
+  - 192.0.2.0/24
+  - 198.51.100.0/24
+  - 203.0.113.0/24
+  - 255.255.255.255/32
+  - 2001:db8::/32
+
+# List of domains market to be insecure, DNSSEC chain of trust is ignored towards those domains.
+# This can be useful if you want to make sure a trust anchor for external lookups does not affect
+# an (unsigned) internal domain. A DS record externally can create validation failures for that
+# internal domain.
+unbound_insecure_domains: []
+
+# Configure a local zone. Answers for local zones are authoritative DNS answers. By default the
+# zones are class IN. A stub-zone can be used to have unbound send queries to another server, an
+# authoritative server, to fetch the information.
+unbound_local_zones: []
+
+# The stub zone can be used to configure authoritative data to be used by the resolver that cannot
+# be accessed using the public internet servers. This is useful for company-local data or private zones.
+# Each entry is an object with `name` and `stub_address`.
+#  `name`: Name of the stub zone. This is the full domain name of the zone.
+#  `stub_address`: IP address of stub zone nameserver.
+unbound_stub_zones: []

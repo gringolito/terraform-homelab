@@ -1,0 +1,70 @@
+---
+- name: Install podman
+  ansible.builtin.apt:
+    name: podman
+    state: present
+  become: true
+  tags:
+    - pi-hole
+
+- name: Create directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0775"
+  loop:
+    - "{{ pihole_config_path }}"
+    - "{{ pihole_dnsmasq_path }}"
+  become: true
+  tags:
+    - pi-hole
+
+- name: Create a Quadlet container file
+  containers.podman.podman_container:
+    state: quadlet
+    quadlet_file_mode: "0640"
+    name: pihole
+    image: docker.io/pihole/pihole:latest
+    cap_add:
+      - NET_ADMIN
+      - SYS_TIME
+      - SYS_NICE
+    network: host
+    privileged: true
+    volumes:
+      - "{{ pihole_config_path }}:/etc/pihole:Z"
+      - "{{ pihole_dnsmasq_path }}:/etc/dnsmasq.d:Z"
+    timezone: "{{ pihole_timezone }}"
+    shm_size: "{{ pihole_container_shm_size }}"
+    pull: newer
+    quadlet_options:
+      - AutoUpdate=registry
+      - |
+        [Unit]
+        Description=A DNS sinkhole that protects your devices from unwanted content.
+        [Service]
+        Restart=always
+        [Install]
+        WantedBy=multi-user.target default.target
+  become: true
+  tags:
+    - pi-hole
+
+- name: Start the container service
+  ansible.builtin.systemd_service:
+    name: pihole
+    state: started
+    enabled: true
+    daemon_reload: true
+  become: true
+  tags:
+    - pi-hole
+
+- name: Change Pi-Hole web password
+  containers.podman.podman_container_exec:
+    name: pihole
+    command: pihole setpassword {{ pihole_web_password }}
+  when: pihole_web_password is defined and pihole_web_password | length > 0
+  become: true
+  tags:
+    - pi-hole

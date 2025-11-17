@@ -1,0 +1,81 @@
+---
+- name: Add PowerDNS APT repository
+  ansible.builtin.deb822_repository:
+    name: powerdns
+    types:
+      - deb
+    uris: "{{ powerdns_repository_url }}"
+    suites: "{{ powerdns_repository_suite }}"
+    components:
+      - main
+    signed_by: "{{ powerdns_repository_key }}"
+
+- name: Install PowerDNS
+  ansible.builtin.apt:
+    name:
+      - pdns-server
+      - pdns-backend-lmdb
+    state: present
+    update_cache: true
+  become: true
+
+- name: Enable PowerDNS to automatically start on each boot
+  ansible.builtin.systemd_service:
+    name: pdns
+    state: started
+    enabled: true
+  become: true
+
+- name: Set-up PowerDNS DNS authoritative server
+  ansible.builtin.template:
+    src: pdns.conf.j2
+    dest: /etc/powerdns/pdns.conf
+    backup: true
+    owner: pdns
+    group: pdns
+    mode: "0640"
+  become: true
+  notify:
+    - Restart PowerDNS
+
+- name: Apply PowerDNS configurations before proceeding
+  ansible.builtin.meta: flush_handlers
+
+- name: Check existing TSIG keys
+  ansible.builtin.command: pdnsutil tsig list
+  changed_when: false
+  register: powerdns_pdnsutil_tsig_list
+  become: true
+
+- name: Import TSIG keys
+  ansible.builtin.command: pdnsutil tsig import {{ item.name }} {{ item.algorithm | lower }} {{ item.secret }}
+  changed_when: true
+  when: item.secret not in powerdns_pdnsutil_tsig_list.stdout
+  loop: "{{ powerdns_tsig_keys }}"
+  become: true
+
+- name: Ensure that the bootstrap directory exists
+  ansible.builtin.file:
+    name: "{{ powerdns_bootstrap_dir }}"
+    state: directory
+    owner: pdns
+    group: pdns
+    mode: "0750"
+  become: true
+
+- name: Bootstrap authoritative DNS zones
+  ansible.builtin.include_tasks: bootstrap-zone.yaml
+  loop_control:
+    loop_var: bootstrap_zone
+  loop: "{{ powerdns_bootstrap_zones }}"
+
+- name: Ensure that PowerDNS owns its data directory
+  ansible.builtin.file:
+    path: "{{ powerdns_data_dir }}"
+    state: directory
+    owner: pdns
+    group: pdns
+    recurse: true
+  become: true
+  notify:
+    - Restart PowerDNS

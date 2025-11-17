@@ -1,0 +1,21 @@
+---
+# The full ULA prefix, used only for documentation.
+radvd_ula_prefix: ""
+
+# List of interface configurations for the RADVD daemon. Each entry is an object with the
+# following attributes:
+#  `interface`: The interface name where the RADVD will distribute the prefix. (Required)
+#  `subnet_prefix`: The /64 subnet prefix to be distributed. (Required)
+#  `max_ra_interval`: The maximum time allowed between sending unsolicited multicast router
+#                     advertisements from the interface, in seconds. (Default: 600)
+#  `min_ra_interval`: The minimum time allowed between sending unsolicited multicast router
+#                     advertisements from the interface, in seconds. (Default: 180)
+#  `dhcpv6_provide_options`: When set, hosts use the DHCPv6 protocol for auto-configuration of
+#                            other (non-address) information. (Default: on)
+#  `rdnss_server`: Recursive DNS server (RDNSS) address. (Optional)
+#  `adv_rdnss_lifetime`: The maximum duration how long the RDNSS entries are used for name
+#                        resolution, in seconds. (Default: 1200)
+#  `dnssl_domain`: DNS Search List (DNSSL) domain. (Optional)
+#  `adv_dnssl_lifetime`: The maximum duration how long the DNSSL entries are used for name
+#                        resolution, in seconds. (Default: 1200)
+radvd_config: []

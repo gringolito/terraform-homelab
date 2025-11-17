@@ -1,0 +1,15 @@
+---
+tld: domain.com
+zones:
+  example:
+    reverse-zone: 0.16.172
+    ttl:
+      a: 900
+      cname: 3600
+    records:
+      cname:
+        www: webserver.example.domain.com
+        webserver: nginx.example.domain.com
+      a:
+        router: [ 172.16.0.1 ]
+        nginx: [ 172.16.0.80 ]

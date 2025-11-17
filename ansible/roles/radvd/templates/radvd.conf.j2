@@ -1,0 +1,33 @@
+# This file is managed by Ansible. Manual changes will be lost on next run.
+
+{% for network in radvd_config %}
+interface {{ network.interface }} {
+    AdvSendAdvert on;
+    MaxRtrAdvInterval {{ network.max_ra_interval | default(600) }};
+    MinRtrAdvInterval {{ network.min_ra_interval | default(180) }};
+
+    AdvManagedFlag off;      # M=0 = no stateful DHCPv6
+    AdvOtherConfigFlag {{ network.dhcpv6_provide_options | default("on") }};   # O=1 = DHCPv6 provides "other options"
+
+    # Our ULA prefix is {{ radvd_ula_prefix | default("unknown") }}
+    prefix {{ network.subnet_prefix }} {
+        AdvOnLink on;
+        AdvAutonomous on;    # A=1 = SLAAC
+        AdvRouterAddr off;
+    };
+
+{% if network.rdnss_server is defined %}
+    # RDNSS: IPv6 DNS servers advertised in RA (RFC 8106)
+    RDNSS {{ network.rdnss_server }} {
+        AdvRDNSSLifetime {{ network.adv_rdnss_lifetime | default(1200) }};
+    };
+{% endif %}
+
+{% if network.dnssl_domain is defined %}
+    # DNSSL: IPv6 DNS Search List advertised in RA (RFC 8106)
+    DNSSL {{ network.dnssl_domain }} {
+        AdvDNSSLLifetime {{ network.adv_dnssl_lifetime | default(1200) }};
+    };
+{% endif %}
+};
+{% endfor %}

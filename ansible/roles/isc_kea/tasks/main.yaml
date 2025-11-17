@@ -1,0 +1,75 @@
+---
+- name: Install ISC Kea repository dependencies
+  ansible.builtin.apt:
+    name: apt-transport-https
+    state: present
+  become: true
+  tags:
+    - kea
+
+- name: Add ISC Kea APT repository
+  ansible.builtin.deb822_repository:
+    name: isc-kea
+    types:
+      - deb
+      - deb-src
+    uris: "{{ isc_kea_apt_repository_url }}"
+    suites: "{{ ansible_distribution_release }}"
+    components:
+      - main
+    signed_by: "{{ isc_kea_apt_repository_key }}"
+  tags:
+    - kea
+
+- name: Install ISC Kea
+  ansible.builtin.apt:
+    name: isc-kea
+    state: present
+    update_cache: true
+  become: true
+  tags:
+    - kea
+
+- name: Enable ISC Kea services to automatically start on each boot
+  ansible.builtin.systemd_service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - isc-kea-dhcp4-server
+    - isc-kea-dhcp-ddns-server
+  become: true
+  tags:
+    - kea
+
+- name: Set-up ISC Kea DHCPv4 server
+  ansible.builtin.template:
+    src: kea-dhcp4.conf.j2
+    dest: /etc/kea/kea-dhcp4.conf
+    backup: true
+    owner: _kea
+    group: _kea
+    mode: "0640"
+    validate: /usr/sbin/kea-dhcp4 -t %s
+  become: true
+  notify:
+    - Restart ISC Kea DHCPv4 Server
+  tags:
+    - kea
+    - kea-dhcp4
+
+- name: Set-up ISC Kea DHCP-DDNS server
+  ansible.builtin.template:
+    src: kea-dhcp-ddns.conf.j2
+    dest: /etc/kea/kea-dhcp-ddns.conf
+    backup: true
+    owner: _kea
+    group: _kea
+    mode: "0640"
+    validate: /usr/sbin/kea-dhcp-ddns -t %s
+  become: true
+  notify:
+    - Restart ISC Kea DHCP-DDNS Server
+  tags:
+    - kea
+    - kea-dhcp-ddns

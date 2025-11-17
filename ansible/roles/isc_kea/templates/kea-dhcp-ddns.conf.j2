@@ -1,0 +1,70 @@
+# This file is managed by Ansible. Manual changes will be lost on next run.
+
+{
+  "DhcpDdns": {
+{% if isc_kea_dhcp_ddns_control_socket_enabled %}
+    "control-sockets": [
+      {
+        "socket-type": "unix",
+        "socket-name": "{{ isc_kea_dhcp_ddns_control_socket }}"
+      }
+    ],
+{% endif %}
+    "forward-ddns": {
+      "ddns-domains": [
+{% for zone in isc_kea_dhcp_ddns_forward_ddns_zones %}
+        {
+          "name": "{{ zone.name }}",
+{% if zone.key_name is defined %}
+          "key-name": "{{ zone.key_name }}",
+{% endif %}
+          "dns-servers": [
+            {
+              "ip-address": "{{ isc_kea_dhcp_ddns_dns_server_address }}",
+              "port": {{ isc_kea_dhcp_ddns_dns_server_port }}
+            }
+          ]
+        }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+      ]
+    },
+    "reverse-ddns": {
+      "ddns-domains": [
+{% for zone in isc_kea_dhcp_ddns_reverse_ddns_zones %}
+        {
+          "name": "{{ zone.name }}",
+{% if zone.key_name is defined %}
+          "key-name": "{{ zone.key_name }}",
+{% endif %}
+          "dns-servers": [
+            {
+              "ip-address": "{{ isc_kea_dhcp_ddns_dns_server_address }}",
+              "port": {{ isc_kea_dhcp_ddns_dns_server_port }}
+            }
+          ]
+        }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+      ]
+    },
+    "tsig-keys": {{ isc_kea_dhcp_ddns_tsig_keys | tojson(indent=6) }},
+    "loggers": [
+{% for component, value in isc_kea_dhcp_ddns_debug_components.items() %}
+{% if value %}
+      {
+        "name": "kea-dhcp-ddns.{{ component | replace('_', '-') }}",
+        "output_options": [{ "output": "syslog" }],
+        "severity": "DEBUG",
+        "debuglevel": 99
+      },
+{% endif %}
+{% endfor %}
+      {
+        "name": "kea-dhcp-ddns",
+        "output_options": [{ "output": "syslog" }],
+        "severity": "{{ isc_kea_dhcp_ddns_log_level }}"
+      }
+    ]
+  }
+}

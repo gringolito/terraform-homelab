@@ -1,0 +1,241 @@
+---
+# Terraform variables (no Jinja2 substitutions allowed)
+
+networks:
+  Main:
+    vlan: 1
+    ipv4_network: 192.168.1.0/24
+    ipv4_gateway: 192.168.1.1
+    ipv4_dhcp_pool: 192.168.1.128 - 192.168.11.254
+    ipv6_subnet_prefix: fd39:89e9:56a6:1::/64
+    dns_zone: main.example.com
+    reverse_dns_zone: 1.168.192.in-addr.arpa
+    dns_server: 192.168.1.3
+    rdnss_server: fd39:89e9:56a6:1:dd0f:ec19:4a7a
+    external_interface: vlan1
+  DNS:
+    vlan: 2
+    ipv4_network: 192.168.2.0/24
+    ipv4_gateway: 192.168.2.1
+    ipv6_subnet_prefix: fd39:89e9:56a6:2::/64
+    dns_zone: dns.example.com
+    reverse_dns_zone: 2.168.192.in-addr.arpa
+    dns_server: 192.168.2.3
+    rdnss_server: d39:89e9:56a6:2:5fdc:ddb2:ad68
+    external_interface: vlan2
+
+containers:
+  kea:
+    domain: example.com
+    networks:
+      Main:
+        interface: eth0
+        ipv4_address: 192.168.1.2
+        ipv4_gateway: 192.168.1.1
+        dns_server: 192.168.2.3
+        dns_search_domain: main.example.com
+        dhcp6: true
+      DNS:
+        interface: eth1
+        ipv4_address: 192.168.2.2
+        dns_server: 192.168.2.3
+        dhcp6: true
+    ansible_groups: [dhcp]
+    config:
+      limits.memory: 384MiB
+
+  unbound:
+    domain: dns.example.com
+    networks:
+      DNS:
+        interface: eth0
+        ipv4_address: 192.168.2.3
+        ipv4_gateway: 192.168.2.1
+        dns_server: 192.168.2.3
+        dns_search_domain: dns.example.com
+        dhcp6: true
+    ansible_groups: [resolver]
+
+  pi-hole:
+    domain: main.gringolito.com
+    networks:
+      Main:
+        interface: eth0
+        ipv4_address: 192.168.1.3
+        ipv4_gateway: 192.168.1.1
+        dns_server: 192.168.2.3
+        dns_search_domain: main.gringolito.com
+        dhcp6: true
+    ansible_groups: [pihole]
+    config:
+      limits.memory: 384MiB
+
+
+# Global Ansible variables
+
+ipv6_ula_prefix: fd39:89e9:56a6::/48
+nameserver: ns1.dns.example.com
+nameserver_address: "{{ containers.kea.networks.DNS.ipv4_address }}"
+zone_admin: admin.example.com
+ntp_servers:
+  - 200.160.0.8
+  - 200.189.40.8
+  - 200.192.232.8
+
+
+# DHCP variables
+
+tsig_keys:
+  - name: kea-dhcp-ddns
+    algorithm: HMAC-SHA512
+    secret: wSfMjj5DtGP0IZqEgq2BHSRPrhTWmBK9CkXsDpKQRaliiMEMMYI3/YDzdMH+NRXfyhGcC9W7u6ARPYfvPn+uSw==
+
+radvd_ula_prefix: "{{ ipv6_ula_prefix }}"
+radvd_config:
+  - interface: "{{ containers.kea.networks.Main.interface }}"
+    subnet_prefix: "{{ networks.Main.ipv6_subnet_prefix }}"
+    rdnss_server: "{{ networks.Main.rdnss_server }}"
+    dnssl_domain: "{{ networks.Main.dns_zone }}"
+
+  - interface: "{{ containers.kea.networks.DNS.interface }}"
+    subnet_prefix: "{{ networks.DNS.ipv6_subnet_prefix }}"
+    rdnss_server: "{{ networks.DNS.rdnss_server }}"
+    dnssl_domain: "{{ networks.DNS.dns_zone }}"
+
+isc_kea_dhcp_ddns_tsig_keys: "{{ tsig_keys }}"
+isc_kea_dhcp_ddns_forward_ddns_zones:
+  - name: "{{ networks.Main.dns_zone }}."
+    key_name: kea-dhcp-ddns
+isc_kea_dhcp_ddns_reverse_ddns_zones:
+  - name: "{{ networks.Main.reverse_dns_zone }}."
+    key_name: kea-dhcp-ddns
+
+isc_kea_dhcp4_listen_interfaces: "{{ containers.kea.networks | dict2items | map(attribute='value.interface') | list }}"
+isc_kea_dhcp4_subnets:
+  - id: "{{ networks.Main.vlan }}"
+    subnet: "{{ networks.Main.ipv4_network }}"
+    interface: "{{ containers.kea.networks.Main.interface }}"
+    pool: "{{ networks.Main.ipv4_dhcp_pool }}"
+    ddns_domain_suffix: "{{ networks.Main.dns_zone }}"
+    options:
+      routers: "{{ networks.Main.ipv4_gateway }}"
+      domain-name-servers: "{{ networks.Main.dns_server }}"
+      domain-name: "{{ networks.Main.dns_zone }}"
+      domain-search: "{{ networks.Main.dns_zone }}"
+      ntp-servers: "{{ ntp_servers | join(',') }}"
+
+powerdns_listen_addresses:
+  - 127.0.0.1
+  - "{{ nameserver_address }}"
+  - ::1
+powerdns_allow_dnsupdate_from:
+  - 127.0.0.0/8
+  - ::1
+powerdns_tsig_keys: "{{ tsig_keys }}"
+powerdns_bootstrap_zones:
+  - zone: "{{ networks.Main.dns_zone }}"
+    nameserver: "{{ nameserver }}"
+    admin_email: "{{ zone_admin }}"
+    tsig_keys:
+      - kea-dhcp-ddns
+    records:
+      - name: kea
+        type: A
+        value: "{{ containers['kea'].networks.Main.ipv4_address }}"
+      - name: pi-hole
+        type: A
+        value: "{{ containers['pi-hole'].networks.Main.ipv4_address }}"
+      - name: dhcp
+        type: CNAME
+        value: kea.{{ networks.Main.dns_zone }}.
+      - name: dns
+        type: CNAME
+        value: pi-hole.{{ networks.Main.dns_zone }}.
+
+  - zone: "{{ networks.Main.reverse_dns_zone }}"
+    nameserver: "{{ nameserver }}"
+    admin_email: "{{ zone_admin }}"
+    tsig_keys:
+      - kea-dhcp-ddns
+    records:
+      - name: "{{ containers['kea'].networks.Main.ipv4_address.split('.')[-1] }}"
+        type: PTR
+        value: kea.{{ networks.Main.dns_zone }}.
+      - name: "{{ containers['pi-hole'].networks.Main.ipv4_address.split('.')[-1] }}"
+        type: PTR
+        value: pi-hole.{{ networks.Main.dns_zone }}.
+
+  - zone: "{{ networks.DNS.dns_zone }}"
+    nameserver: "{{ nameserver }}"
+    admin_email: "{{ zone_admin }}"
+    tsig_keys: []
+    records:
+      - name: ns1
+        type: A
+        value: "{{ nameserver_address }}"
+      - name: unbound
+        type: A
+        value: "{{ containers['unbound'].networks.DNS.ipv4_address }}"
+      - name: dns
+        type: CNAME
+        value: unbound.{{ networks.DNS.dns_zone }}.
+      - name: resolver
+        type: CNAME
+        value: unbound.{{ networks.DNS.dns_zone }}.
+
+  - zone: "{{ networks.DNS.reverse_dns_zone }}"
+    nameserver: "{{ nameserver }}"
+    admin_email: "{{ zone_admin }}"
+    tsig_keys: []
+    records:
+      - name: "{{ nameserver_address.split('.')[-1] }}"
+        type: PTR
+        value: ns1.{{ networks.DNS.dns_zone }}.
+      - name: "{{ containers['unbound'].networks.DNS.ipv4_address.split('.')[-1] }}"
+        type: PTR
+        value: unbound.{{ networks.DNS.dns_zone }}.
+
+# Resolver variables
+
+unbound_listen_interfaces: "{{ containers.unbound.networks | dict2items | map(attribute='value.interface') | list }}"
+unbound_allowed_networks:
+  - 127.0.0.0/8
+  - "{{ networks.Main.ipv4_network }}"
+  - "{{ networks.Main.ipv6_subnet_prefix }}"
+  - "{{ networks.DNS.ipv4_network }}"
+  - "{{ networks.DNS.ipv6_subnet_prefix }}"
+
+unbound_private_addresses:
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  # - 192.168.0.0/16
+  - 169.254.0.0/16
+  # - fd00::/8
+  - fe80::/10
+  - 192.0.2.0/24
+  - 198.51.100.0/24
+  - 203.0.113.0/24
+  - 255.255.255.255/32
+  - 2001:db8::/32
+unbound_cache_min_ttl: 150
+unbound_local_zones:
+  - "{{ networks.Main.dns_zone }}."
+  - "{{ networks.Main.reverse_dns_zone }}."
+  - "{{ networks.DNS.dns_zone }}."
+  - "{{ networks.DNS.reverse_dns_zone }}."
+unbound_insecure_domains: "{{ unbound_local_zones }}"
+unbound_stub_zones:
+  - name: "{{ networks.Main.dns_zone }}."
+    stub_address: "{{ nameserver_address }}"
+  - name: "{{ networks.Main.reverse_dns_zone }}."
+    stub_address: "{{ nameserver_address }}"
+  - name: "{{ networks.DNS.dns_zone }}."
+    stub_address: "{{ nameserver_address }}"
+  - name: "{{ networks.DNS.reverse_dns_zone }}."
+    stub_address: "{{ nameserver_address }}"
+
+# Pi-Hole variables
+
+pihole_container_shm_size: 320m
+pihole_timezone: America/Sao_Paulo
+pihole_web_password: s3cr3t

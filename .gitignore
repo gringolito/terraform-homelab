@@ -45,6 +45,9 @@ terraform.rc
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,ansible
 
+# Ansible lock files
+**/.ansible/.lock
+
 # .tfplan files
 *.tfplan
 *.tfplan.*

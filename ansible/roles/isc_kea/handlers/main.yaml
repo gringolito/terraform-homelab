@@ -1,0 +1,10 @@
+---
+- name: Restart ISC Kea DHCPv4 Server
+  ansible.builtin.systemd_service:
+    name: isc-kea-dhcp4-server
+    state: restarted
+
+- name: Restart ISC Kea DHCP-DDNS Server
+  ansible.builtin.systemd_service:
+    name: isc-kea-dhcp-ddns-server
+    state: restarted
