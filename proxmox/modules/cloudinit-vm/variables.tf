@@ -47,16 +47,22 @@ variable "pve_node" {
   type        = string
 }
 
+variable "networks" {
+  description = "List of network bridge names on the Proxmox host to attach the VM NIC(s) to"
+  type        = list(string)
+  default     = []
+}
+
+variable "power_on" {
+  description = "Whether the VM should be powered on or not"
+  type        = bool
+  default     = true
+}
+
 variable "scsi_controller" {
   description = "SCSI controller model to attach to the VM"
   type        = string
   default     = "virtio-scsi-pci"
-}
-
-variable "network_bridge" {
-  description = "Network bridge on the Proxmox host to attach the VM NIC(s) to"
-  type        = string
-  default     = "vmbr0"
 }
 
 variable "nic_model" {
@@ -74,13 +80,13 @@ variable "gpu_passthrough" {
 variable "gpu_mapping" {
   description = "Logical name or label used to map the GPU resource for passthrough"
   type        = string
-  default     = "Intel-iGPU"
+  default     = ""
 }
 
 variable "gpu_mdev_device_type" {
   description = "Mediated device (mdev) type to use when assigning shared GPU instances"
   type        = string
-  default     = "i915-GVTg_V5_4"
+  default     = ""
 }
 
 variable "ci_storage" {
@@ -102,13 +108,12 @@ variable "ci_ssh_public_keys" {
 variable "ci_dns_server" {
   description = "DNS server IP address to configure inside the VM via cloud-init"
   type        = string
-  default     = "192.168.11.52"
+  default     = "1.1.1.1"
 }
 
 variable "ci_domain" {
   description = "Domain name to configure for the VM's hostname in cloud-init"
   type        = string
-  default     = "home.gringolito.com"
 }
 
 variable "ci_type" {
@@ -121,14 +126,29 @@ variable "ssh_private_key_path" {
   type        = string
 }
 
-variable "power_on" {
-  description = "Whether the VM should be powered on or not"
+variable "ansible_provision" {
+  description = "Wether to run an Ansible playbook to provision the (newly) created VMs"
   type        = bool
   default     = true
 }
 
-variable "extra_networks" {
-  description = "List of additional network bridge names to attach as secondary NICs"
-  type        = list(string)
-  default     = []
+variable "ansible_playbook" {
+  description = "Path to the Ansible playbook to execute right after launching the VM for the first time"
+  type        = string
+}
+
+variable "ansible_variables" {
+  description = "Path to the Ansible variables file to be applied to this VM"
+  type        = string
+}
+
+variable "ansible_playbook_binary" {
+  description = "Path to the `ansible-playbook` executable binary"
+  type        = string
+}
+
+variable "efi" {
+  description = "Whether the VM boots from a EFI or BIOS (default)"
+  type        = bool
+  default     = false
 }

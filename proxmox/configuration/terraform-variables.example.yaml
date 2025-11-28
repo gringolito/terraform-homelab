@@ -1,0 +1,43 @@
+---
+dns_server: 192.168.2.3
+cluster_dns_domain: pve.example.com
+cluster_migration_cidr: 192.168.4.0/24
+
+pve_bridges:
+  vmbr0:
+    comment: main Network
+    nodes:
+      PVE-01:
+        interfaces: [enp2s0]
+        ip_address: 192.168.1.4/24
+        gateway: 192.168.1.1
+      PVE-02:
+        interfaces: [eno2]
+        ip_address: 192.168.1.5/24
+        gateway: 192.168.1.1
+      PVE-03:
+        interfaces: [eno2]
+        ip_address: 192.168.1.6/24
+        gateway: 192.168.1.1
+
+pve_vlans:
+  vlan4:
+    comment: pve-cluster Network
+    vlan_id: 4
+    nodes:
+      PVE-01:
+        interface: enp1s0
+        ip_address: 192.168.4.4/24
+      PVE-02:
+        interface: enp1s0
+        ip_address: 192.168.4.5/24
+      PVE-03:
+        interface: enp1s0
+        ip_address: 192.168.4.6/24
+
+pve_sdn_vlan_zones:
+  lan:
+    bridge: vmbr0
+    vnets:
+      Dev: 5
+      Prod: 6
