@@ -1,0 +1,92 @@
+# This file is managed by Ansible. Manual changes will be lost on next run.
+
+{
+  "Dhcp4": {
+{% if isc_kea_dhcp4_control_socket_enabled %}
+    "control-sockets": [
+      {
+        "socket-type": "unix",
+        "socket-name": "{{ isc_kea_dhcp4_control_socket }}"
+      }
+    ],
+{% endif %}
+
+    "interfaces-config": {
+      "interfaces": {{ isc_kea_dhcp4_listen_interfaces | tojson }}
+    },
+
+    "lease-database": {
+      "type": "memfile",
+      "persist": true,
+      "name": "{{ isc_kea_dhcp4_lease_file }}",
+      "lfc-interval": {{ isc_kea_dhcp4_lfc_interval }},
+      "max-row-errors": 100
+    },
+
+    "valid-lifetime": {{ isc_kea_dhcp4_lease_time }},
+    "calculate-tee-times": true,
+    "match-client-id": {{ isc_kea_dhcp4_match_client_id | tojson }},
+    "authoritative": {{ isc_kea_dhcp4_authoritative | tojson }},
+    "host-reservation-identifiers": [ "hw-address", "duid", "client-id" ],
+    "reservations-global": false,
+    "reservations-in-subnet": true,
+    "reservations-out-of-pool": true,
+
+    "subnet4": [
+{% for subnet in isc_kea_dhcp4_subnets %}
+      {
+        "id": {{ subnet.id }},
+        "subnet": "{{ subnet.subnet }}",
+        "interface": "{{ subnet.interface }}",
+        "allocator": "random",
+        "pools": [{ "pool": "{{ subnet.pool }}" }],
+{% if subnet.ddns_domain_suffix is defined %}
+        "ddns-qualifying-suffix": "{{ subnet.ddns_domain_suffix }}",
+{% endif %}
+{% if subnet.options is defined %}
+        "option-data": [
+{% for option, value in subnet.options.items() %}
+          {
+            "name": "{{ option }}",
+            "data": "{{ value }}"
+          }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+        ],
+{% endif %}
+{% if subnet.reservations is defined %}
+        "reservations": {{ subnet.reservations | tojson(indent=10) }}
+{% else %}
+        "reservations": []
+{% endif %}
+      }{% if not loop.last %},{% endif %}
+
+{% endfor %}
+    ],
+    "dhcp-ddns": {
+      "enable-updates": {{ isc_kea_dhcp4_ddns_updates | tojson }}
+    },
+    "ddns-send-updates": true,
+    "ddns-override-client-update": true,
+    "ddns-override-no-update": true,
+    "ddns-update-on-renew": true,
+    "ddns-conflict-resolution-mode": "check-exists-with-dhcid",
+    "loggers": [
+{% for component, value in isc_kea_dhcp4_debug_components.items() %}
+{% if value %}
+      {
+        "name": "kea-dhcp4.{{ component | replace('_', '-') }}",
+        "output_options": [{ "output": "syslog" }],
+        "severity": "DEBUG",
+        "debuglevel": 99
+      },
+{% endif %}
+{% endfor %}
+      {
+        "name": "kea-dhcp4",
+        "output_options": [{ "output": "syslog" }],
+        "severity": "{{ isc_kea_dhcp4_log_level }}"
+      }
+    ]
+  }
+}

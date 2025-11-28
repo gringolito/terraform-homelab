@@ -1,0 +1,16 @@
+galaxy_info:
+  author: Filipe Utzig <filipe@gringolito.com>
+  description: Set-up PowerDNS Authoritative DNS server
+  namespace: gringolito
+  role_name: powerdns
+  license: Beerware
+  min_ansible_version: "2.15"
+
+  galaxy_tags:
+    - powerdns
+    - dns
+    - ddns
+    - authoritative
+    - lmdb
+
+dependencies: []

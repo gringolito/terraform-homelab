@@ -1,0 +1,119 @@
+---
+# Local IP addresses to which we bind. Each address specified can include a port number; if no
+# port is included then the local-port port will be used for that address. If a port number is
+# specified, it must be separated from the address with a ‘:’; for an IPv6 address the address
+# must be enclosed in square brackets.
+powerdns_listen_addresses: ["127.0.0.1", "::1"]
+
+# Local port to bind to. If an address in local-address does not have an explicit port, this port is used.
+powerdns_listen_port: 53
+
+# Allow DNS updates from these IP ranges.
+powerdns_allow_dnsupdate_from: ["127.0.0.0/8", "::1"]
+
+# TTL to use when none is provided.
+powerdns_default_ttl: 3600 # 1 hour
+
+# Requires DNS updates to be signed by a valid TSIG signature even if the zone has no associated keys.
+powerdns_dnsupdate_require_tsig: true
+
+# Amount of logging. The higher the number, the more lines logged. Not recommended to set this below 3.
+# Corresponds to “syslog” level values:
+#  0 = emergency
+#  1 = alert
+#  2 = critical
+#  3 = error
+#  4 = warning
+#  5 = notice
+#  6 = info
+#  7 = debug
+powerdns_log_level: 4
+
+# If set to ‘no’, informative-only DNS details will not even be sent to syslog, improving performance.
+powerdns_log_dns_details: false
+
+# Tell PowerDNS to log all incoming DNS queries.
+# This will lead to a lot of logging! Only enable for debugging!
+# Set powerdns_log_level to at least 5 to see the logs.
+powerdns_log_dns_queries: false
+
+# Enable higher performance on compliant kernels by using SO_REUSEPORT allowing each receiver
+# thread to open its own socket.
+powerdns_reuseport: true
+
+# Enable/disable the REST API (including HTTP listener).
+powerdns_api: false
+
+# Static pre-shared authentication key for access to the REST API.
+powerdns_api_key: ""
+
+# Start a webserver for monitoring (powerdns_api=true also enables the HTTP listener).
+powerdns_webserver: false
+
+# IP Address or path to UNIX domain socket for webserver/API to listen on.
+powerdns_webserver_address: "127.0.0.1"
+
+# The port where webserver/API will listen on.
+powerdns_webserver_port: 8081
+
+# Webserver/API access is only allowed from these subnets.
+powerdns_webserver_allow_from: ["127.0.0.1", "::1"]
+
+# Password required for accessing the webserver.
+powerdns_webserver_password: ""
+
+# Path to the LMDB file
+powerdns_lmdb_filename: "{{ powerdns_data_dir }}/pdns.lmdb"
+
+# Synchronization mode: one of sync, nosync, nometasync
+powerdns_lmdb_sync_mode: sync
+
+# Size, in megabytes, of each LMDB database. This number can be increased later, but never decreased.
+powerdns_lmdb_map_size: 2048
+
+# Default starting zone version number whenever it was not provided in the zone definition.
+powerdns_zone_default_serial: 1
+
+# Default value for SOA refresh timer whenever it was not provided in the zone definition.
+powerdns_zone_default_refresh: 3600 # 1 hour
+
+# Default value for SOA retry timer whenever it was not provided in the zone definition.
+powerdns_zone_default_retry: 1800 # 30 minutes
+
+# Default value for SOA expire timer whenever it was not provided in the zone definition.
+powerdns_zone_default_expire: 604800 # 7 days
+
+# Default value for SOA negative TTL whenever it was not provided in the zone definition.
+powerdns_zone_default_negative_ttl: 900 # 15 minutes
+
+# Path to the bootstrap persistent storage, if it is set to a non-persistent storage, the playbook
+# will bootstrap (overwrite) the zone every time the zones files are erased for this directory.
+powerdns_bootstrap_dir: "{{ powerdns_data_dir }}/bootstrapped-zones/"
+
+# List of TSIG keys accepted by PowerDNS. Each entry is an object with the following attributes:
+#  `name`: The TSIG key name. (Required).
+#  `algorithm`: The TSIG key algorithm: one of hmac-{md5,sha1,sha224,sha256,sha384,sha512}. (Required)
+#  `secret`: The TSIG key secret. (Required)
+powerdns_tsig_keys: []
+
+# The `Record` type is an object with the following attributes:
+#  `name`: The DNS record name. (Required).
+#  `type`: The DNS record type: one of A, AAAA, PTR, CNAME. (Required)
+#  `value`: The DNS mapped value for the record. (Required)
+
+# The list of zones that PowerDNS will bootstrap when running this playbook. Each entry is an object
+# with the following attributes:
+#  `zone`: The DNS zone to be created. (Required)
+#  `nameserver`: The primary nameserver (NS) for the zone. (Required)
+#  `admin_email`: The administrative e-mail in the RNAME format. (Defaults to admin.{zone})
+#  `ttl`: The TTL for the zone. (Defaults to powerdns_default_ttl)
+#  `serial`: The zone version number. (Defaults to powerdns_zone_default_serial)
+#  `refresh`: The zone refresh timer. (Defaults to powerdns_zone_default_refresh)
+#  `retry`: The zone retry timer. (Defaults to powerdns_zone_default_retry)
+#  `expire`: The zone expire timer. (Defaults to powerdns_zone_default_expire)
+#  `negative_ttl`: The zone negative (minimum) TTL. (Defaults to powerdns_zone_default_negative_ttl)
+#  `tsig_keys`: List of TSIG keys valid for this zone. (Optional)
+#  `records`: The list of entries (records) to bootstrap the zone (see the `Record` type described above). (Optional)
+#
+# If the nameserver for the zone lives inside it, that glue should be provided in the `records` field.
+powerdns_bootstrap_zones: []

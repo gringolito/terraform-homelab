@@ -1,0 +1,5 @@
+---
+powerdns_repository_url: http://repo.powerdns.com/{{ ansible_distribution | lower }}
+powerdns_repository_key: https://repo.powerdns.com/FD380FBB-pub.asc
+powerdns_repository_suite: "{{ ansible_distribution_release }}-auth-50"
+powerdns_data_dir: /var/lib/powerdns

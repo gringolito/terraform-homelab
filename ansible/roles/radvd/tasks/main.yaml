@@ -1,0 +1,32 @@
+---
+- name: Install RADVD
+  ansible.builtin.apt:
+    name: radvd
+    state: present
+  become: true
+  tags:
+    - radvd
+
+- name: Enable RADVD service to automatically start on each boot
+  ansible.builtin.systemd_service:
+    name: radvd
+    state: started
+    enabled: true
+  become: true
+  tags:
+    - radvd
+
+- name: Set-up RADVD to advertise ULA prefixes in the network
+  ansible.builtin.template:
+    src: radvd.conf.j2
+    dest: /etc/radvd.conf
+    backup: true
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/radvd -c -C %s
+  become: true
+  notify:
+    - Restart RADVD
+  tags:
+    - radvd

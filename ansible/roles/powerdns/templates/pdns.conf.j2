@@ -1,0 +1,35 @@
+# This file is managed by Ansible. Manual changes will be lost on next run.
+
+# Global SO settings
+local-address={{ powerdns_listen_addresses | join(",") }}
+local-port={{ powerdns_listen_port }}
+setuid=pdns
+setgid=pdns
+reuseport={{ "yes" if powerdns_reuseport else "no" }}
+
+# Global DNS settings
+default-ttl={{ powerdns_default_ttl }}
+version-string=powerdns
+dnsupdate=yes
+dnsupdate-require-tsig={{ "yes" if powerdns_dnsupdate_require_tsig else "no" }}
+allow-dnsupdate-from={{ powerdns_allow_dnsupdate_from | join(",") }}
+
+# LMDB Backend settings
+launch=lmdb
+lmdb-filename={{ powerdns_lmdb_filename }}
+lmdb-sync-mode={{ powerdns_lmdb_sync_mode }}
+lmdb-map-size={{ powerdns_lmdb_map_size }}
+
+# PowerDNS Web/API settings
+api={{ "yes" if powerdns_api else "no" }}
+api-key={{ powerdns_api_key }}
+webserver={{ "yes" if powerdns_webserver else "no" }}
+webserver-address={{ powerdns_webserver_address }}
+webserver-port={{ powerdns_webserver_port }}
+webserver-allow-from={{ powerdns_webserver_allow_from | join(",") }}
+webserver-password={{ powerdns_webserver_password }}
+
+# Logging settings
+loglevel={{ powerdns_log_level }}
+log-dns-queries={{ "yes" if powerdns_log_dns_queries else "no" }}
+log-dns-details={{ "yes" if powerdns_log_dns_details else "no" }}

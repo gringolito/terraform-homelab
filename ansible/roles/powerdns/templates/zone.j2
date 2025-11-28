@@ -1,0 +1,16 @@
+$ORIGIN {{ bootstrap_zone.zone }}.
+$TTL {{ bootstrap_zone.ttl | default(powerdns_default_ttl) }}
+@   IN SOA  {{ bootstrap_zone.nameserver }}. {{ bootstrap_zone.admin_email | default("admin." + bootstrap_zone.zone)}}. (
+                {{ bootstrap_zone.serial | default(powerdns_zone_default_serial) }} ; serial
+                {{ bootstrap_zone.refresh | default(powerdns_zone_default_refresh) }}   ; refresh
+                {{ bootstrap_zone.retry | default(powerdns_zone_default_retry) }}   ; retry
+                {{ bootstrap_zone.expire | default(powerdns_zone_default_expire) }} ; expire
+                {{ bootstrap_zone.negative_ttl | default(powerdns_zone_default_negative_ttl) }} ; minimum
+                )
+            NS  {{ bootstrap_zone.nameserver }}.
+
+{% if bootstrap_zone.records is defined %}
+{% for record in bootstrap_zone.records %}
+{{ record.name }}   {{ record.type }}	{{ record.value }}
+{% endfor %}
+{% endif %}

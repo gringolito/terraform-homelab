@@ -111,7 +111,7 @@ resource "proxmox_virtual_environment_vm" "cloudinit_vm" {
       }
     }
 
-    user_data_file_id = proxmox_virtual_environment_file.cloundinit_config.id
+    user_data_file_id = proxmox_virtual_environment_file.cloudinit_config.id
   }
 
   network_device {
@@ -160,7 +160,7 @@ resource "proxmox_virtual_environment_vm" "cloudinit_vm" {
 }
 
 # Generate the cloud-init config file
-resource "proxmox_virtual_environment_file" "cloundinit_config" {
+resource "proxmox_virtual_environment_file" "cloudinit_config" {
   content_type = "snippets"
   datastore_id = var.ci_storage
   node_name    = var.pve_node

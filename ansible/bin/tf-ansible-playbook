@@ -1,0 +1,12 @@
+#!/bin/bash
+set -o pipefail
+
+for arg in "${@}"; do
+  case "$arg" in
+    hostname=*)
+      host="${arg#hostname=}"
+      ;;
+  esac
+done
+
+exec ansible-playbook "${@}" | tee "ansible-output-${host}.log"

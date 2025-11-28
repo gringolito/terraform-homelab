@@ -11,10 +11,10 @@ roles:
 
 collections:
   - name: cloud.terraform
-    version: 3.0.0
+    version: 4.0.0
   - name: community.general
-    version: 8.5.0
+    version: 12.0.1
   - name: kubernetes.core
-    version: 2.4.2
+    version: 6.2.0
   - name: community.zabbix
-    version: 3.3.0
+    version: 4.1.1

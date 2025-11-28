@@ -1,0 +1,30 @@
+---
+- name: Create the DNS zone file
+  ansible.builtin.template:
+    src: zone.j2
+    dest: "{{ powerdns_bootstrap_dir }}/{{ bootstrap_zone.zone }}.zone"
+    owner: pdns
+    group: pdns
+    mode: "0640"
+  register: powerdns_bootstrap_zone_create_dns_zone_file
+  become: true
+
+- name: Load the zone into PowerDNS
+  ansible.builtin.command: pdnsutil zone load {{ bootstrap_zone.zone }} {{ powerdns_bootstrap_zone_create_dns_zone_file.dest }}
+  changed_when: true
+  when: powerdns_bootstrap_zone_create_dns_zone_file.changed
+  become: true
+  notify:
+    - Check PowerDNS zones
+
+- name: Check the current zone TSIG allowed keys
+  ansible.builtin.command: pdnsutil metadata get {{ bootstrap_zone.zone }} TSIG-ALLOW-DNSUPDATE
+  changed_when: false
+  register: powerdns_pdnsutil_get_tsig
+  become: true
+
+- name: Allow TSIG keys to DNSUPDATE on the zone
+  ansible.builtin.command: pdnsutil metadata set {{ bootstrap_zone.zone }} TSIG-ALLOW-DNSUPDATE {{ bootstrap_zone.tsig_keys | sort | unique | join(' ') }}
+  changed_when: true
+  when: "'TSIG-ALLOW-DNSUPDATE = ' ~ bootstrap_zone.tsig_keys | sort | unique | join(', ') ~ '\n' not in powerdns_pdnsutil_get_tsig.stdout ~ '\n'"
+  become: true

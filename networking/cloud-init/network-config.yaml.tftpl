@@ -1,0 +1,24 @@
+network:
+  version: 2
+  ethernets:
+%{ for name, network in networks ~}
+    ${network.interface}:
+%{ if !try(network.dhcp4, false) ~}
+      addresses:
+        - ${network.ipv4_address}/24
+%{ if try(network.ipv4_gateway != null, false) ~}
+      routes:
+        - to: default
+          via: ${network.ipv4_gateway}
+%{ endif ~}
+      nameservers:
+        addresses:
+          - ${network.dns_server}
+%{ if try(network.dns_search_domain != null, false) ~}
+        search:
+          - ${network.dns_search_domain}
+%{ endif ~}
+%{ endif ~}
+      dhcp4: ${ try(network.dhcp4, false) }
+      dhcp6: ${ try(network.dhcp6, false) }
+%{ endfor ~}

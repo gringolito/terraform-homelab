@@ -1,0 +1,137 @@
+---
+# Enables the management API to issue of specific management commands, such as configuration retrieval or shutdown.
+isc_kea_dhcp_ddns_control_socket_enabled: true
+
+# Path to the Kea DHCP-DDNS control socket.
+isc_kea_dhcp_ddns_control_socket: /var/run/kea/kea-d2-ctrl-socket
+
+# List of TSIG keys that may be used in a DDNS protocol exchange. To use TSIG when
+# updating entries in a DNS domain, a key must be defined in the TSIG key list and referenced
+# by name in that domain's configuration entry.  Each entry is an object with the following attributes:
+#  `name`: Unique text label used to identify this key within the list. (Required).
+#  `algorithm`: Specifies which hashing algorithm should be used with this key. (Required).
+#  `secret`: Specify the shared secret key code for this key. (Optional).
+#  `secret-file`: Specifies the file name where the secret can be found (Preferred over `secret`). (Optional).
+isc_kea_dhcp_ddns_tsig_keys: []
+
+# The IP address at which the DNS server listens for DDNS requests.
+isc_kea_dhcp_ddns_dns_server_address: 127.0.0.1
+
+# The port on which the DNS server listens for DDNS requests.
+isc_kea_dhcp_ddns_dns_server_port: 53
+
+# Configure DDNS for forward DNS zones. Each entry is an object with the following attributes:
+#  `name`: The fully qualified domain name (or zone) that this DDNS domain can update. (Required).
+#  `key_name`: If TSIG is used, this value should be the name of the key from the TSIG key list. (Optional).
+isc_kea_dhcp_ddns_forward_ddns_zones: []
+
+# Configure DDNS for reverse DNS zones. Each entry is an object with the following attributes:
+#  `name`: The fully qualified reverse zone that this DDNS domain can update. (Required).
+#  `key_name`: If TSIG is used, this value should be the name of the key from the TSIG key list. (Optional).
+isc_kea_dhcp_ddns_reverse_ddns_zones: []
+
+# Log level for the DHCP-DDNS server.
+isc_kea_dhcp_ddns_log_level: INFO
+
+# Enable disable full debug logs for individual DHCP-DDNS server components.
+isc_kea_dhcp_ddns_debug_components:
+  # Used to log basic information about the process, received signals, and triggered reconfigurations.
+  dctl: false
+  # Used to log messages about network events in DDNS operations.
+  asiodns: false
+  # Used by the kea-dhcp-ddns daemon to log events related to DDNS operations.
+  dhcpddns: false
+  # Used by the kea-dhcp-ddns daemon to log information about events dealing with receiving messages
+  # from the DHCP servers and adding them to the queue for processing.
+  dhcp_to_d2: false
+  # Used by the kea-dhcp-ddns daemon to log information about events dealing with sending and receiving
+  # messages to and from the DNS servers.
+  d2_to_dns: false
+  # Used to log events related to DDNS operations.
+  libdhcp_ddns: false
+
+# Enables the management API to issue of specific management commands, such as configuration retrieval or shutdown.
+isc_kea_dhcp4_control_socket_enabled: true
+
+# Path to the Kea DHCP-DDNS control socket.
+isc_kea_dhcp4_control_socket: /var/run/kea/kea-dhcp4-ctrl-socket
+
+# The network interfaces on which the DHCPv4 server should listen to DHCP messages.
+isc_kea_dhcp4_listen_interfaces: []
+
+# Defines how long the addresses (leases) given out by the server are valid (in seconds).
+# Sets the value for the `dhcp-lease-time` option.
+isc_kea_dhcp4_lease_time: 3600
+
+# Use client-id to identify the client, set to false to force MAC address as the client identifier.
+isc_kea_dhcp4_match_client_id: true
+
+# In authoritative mode Kea always rejects INIT-REBOOT requests from unknown clients with DHCPNAK messages.
+isc_kea_dhcp4_authoritative: true
+
+# Specifies the lease file in which new leases and lease updates are recorded.
+isc_kea_dhcp4_lease_file: /var/lib/kea/kea-leases4.csv
+
+# Specifies the interval, in seconds, at which the server will perform a lease file cleanup (LFC).
+# This removes redundant (historical) information from the lease file and effectively reduces the
+# lease file size.
+isc_kea_dhcp4_lfc_interval: 3600
+
+# The `Reservation` type is an object with the following attributes:
+#  `client-id`: Client-id that identifies the client. (Optional).
+#  `hw-address`: MAC address used to identify the client. (Optional).
+#  `duid`: DHCP Unique Identifier that identifies the client. (Optional).
+#  `ip-address`: IP address reserved to the client. (Required).
+#  `hostname`: Hostname reserved to the client. (Optional).
+#
+# One of the `client-id`, `hw-address`, or `duid` should be provided to identify the client.
+
+# The subnets managed by the DHCP server. Each entry is an object with the following attributes:
+#  `id`: A unique and stable number associated with a particular subnet. (Required).
+#  `subnet`: The subnet prefix that identifies the subnet. (Required).
+#  `interface`: The interface where requests should be accepted by this subnet. (Required).
+#  `pool`: Pool of dynamic addresses to be managed. (Required).
+#  `ddns_domain_suffix`: The qualified domain to append into the hostname. (Optional).
+#  `options`: Map of options to their values (see https://kea.readthedocs.io/en/stable/arm/dhcp4-srv.html#dhcp4-std-options-list
+#             for the list of available options) (Optional).
+#  `reservations`: List of DHCP address reservations for static IP allocation (see the `Reservation`
+#                  type described above). (Optional).
+isc_kea_dhcp4_subnets: []
+
+# Enables connectivity to kea-dhcp-ddns such that DDNS updates can be constructed and sent.
+isc_kea_dhcp4_ddns_updates: true
+
+# Log level for the DHCPv4 server.
+isc_kea_dhcp4_log_level: INFO
+
+# Enable disable full debug logs for individual DHCPv4 server components.
+isc_kea_dhcp4_debug_components:
+  # Used by the lease allocation engine, which is responsible for managing leases in the lease database.
+  alloc_engine: false
+  # Used to log malformed HTTP packets when using basic authentication.
+  auth: false
+  # Used by the DHCP servers for logging inbound client packets that were dropped or to which the server responded with a DHCPNAK.
+  bad_packets: false
+  # Used to log messages related to the handling of commands received by the DHCP server over the command channel.
+  commands: false
+  # Used by the DHCP server to log messages related to Client FQDN and Hostname option processing.
+  # It also includes log messages related to the relevant DNS updates.
+  ddns: false
+  # Used to log basic operations.
+  dhcp4: false
+  # The base loggers for the libkea-dhcpsrv.so library.
+  dhcpsrv: false
+  # Used to log messages related to the client classification expression evaluation code.
+  eval: false
+  # Used within the libkea-dhcpsrv.so to log messages related to the management of DHCP host reservations.
+  hosts: false
+  # Used by the DHCP server to log messages related to lease allocation. The messages include detailed information about
+  # the allocated or offered leases, errors during the lease allocation, etc.
+  leases: false
+  # Used by the DHCP server to log messages related to the processing of options in the DHCP messages.
+  options: false
+  # Mostly used to log messages related to transmission of DHCP packets, i.e. packet reception and the sending of a response.
+  # Such messages include information about the source and destination IP addresses and interfaces used to transmit packets.
+  packets: false
+  # Used to log messages related to TCP traffic.
+  tcp: false

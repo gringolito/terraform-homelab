@@ -1,0 +1,12 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${hostname}.${domain}
+locale: en_US
+timezone: America/Sao_Paulo
+prefer_fqdn_over_hostname: true
+package_reboot_if_required: true
+package_update: true
+package_upgrade: true
+packages:
+  - htop
+  - vim

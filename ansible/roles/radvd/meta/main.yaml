@@ -1,0 +1,16 @@
+galaxy_info:
+  author: Filipe Utzig <filipe@gringolito.com>
+  description: Set-up RADVD to delegate ULA prefixes on a internal IPv6 network
+  namespace: gringolito
+  role_name: radvd
+  license: Beerware
+  min_ansible_version: "2.14"
+
+  galaxy_tags:
+    - radvd
+    - ipv6
+    - ula
+    - rdnss
+    - dnssl
+
+dependencies: []

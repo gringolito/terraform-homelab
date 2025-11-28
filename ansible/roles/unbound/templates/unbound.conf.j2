@@ -1,0 +1,43 @@
+# This file is managed by Ansible. Manual changes will be lost on next run.
+
+server:
+  verbosity: {{ unbound_verbosity }}
+  hide-identity: {{ "yes" if unbound_hide_identity else "no" }}
+  hide-version: {{ "yes" if unbound_hide_version else "no" }}
+{% for interface in unbound_listen_interfaces %}
+  interface: {{ interface }}
+{% endfor %}
+  port: {{ unbound_listen_port }}
+{% for network in unbound_allowed_networks %}
+  access-control: {{ network }} allow
+{% endfor %}
+  do-udp: {{ "yes" if unbound_do_udp else "no" }}
+  do-tcp: {{ "yes" if unbound_do_tcp else "no" }}
+  do-ip4: {{ "yes" if unbound_do_ipv4 else "no" }}
+  do-ip6: {{ "yes" if unbound_do_ipv6 else "no" }}
+  prefer-ip4: {{ "yes" if unbound_prefer_ipv4 else "no" }}
+  prefer-ip6: {{ "yes" if unbound_prefer_ipv6 else "no" }}
+  prefetch: {{ "yes" if unbound_prefetch else "no" }}
+  prefetch-key: {{ "yes" if unbound_prefetch_key else "no" }}
+  num-threads: {{ unbound_num_threads }}
+  so-rcvbuf: {{ unbound_so_rcvbuf }}
+  cache-max-ttl: {{ unbound_cache_max_ttl }}
+  cache-min-ttl: {{ unbound_cache_min_ttl }}
+  msg-cache-size: {{ unbound_msg_cache_size }}
+  rrset-cache-size: {{ unbound_rrset_cache_size }}
+{% for address in unbound_private_addresses %}
+  private-address: {{ address }}
+{% endfor %}
+{% for domain in unbound_insecure_domains %}
+  domain-insecure: {{ domain }}
+{% endfor %}
+{% for zone in unbound_local_zones %}
+  local-zone: {{ zone }} always_transparent
+{% endfor %}
+
+{% for zone in unbound_stub_zones %}
+stub-zone:
+  name: {{ zone.name }}
+  stub-addr: {{ zone.stub_address }}
+
+{% endfor %}
