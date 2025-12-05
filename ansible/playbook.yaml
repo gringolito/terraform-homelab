@@ -1,4 +1,13 @@
 ---
+- name: Load Ansible variables
+  hosts:
+    - all
+  tasks:
+    - name: From Terraform execution
+      ansible.builtin.include_vars: "{{ terraform_var_file }}"
+      tags:
+        - always
+
 - name: Enable EPEL repository
   hosts:
     - el8

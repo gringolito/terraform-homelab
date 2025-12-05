@@ -1,0 +1,30 @@
+#cloud-config
+locale: en_US
+timezone: America/Sao_Paulo
+hostname: ${name}
+fqdn: ${name}.${domain}
+prefer_fqdn_over_hostname: false
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+packages:
+  - qemu-guest-agent
+  - vim
+  - htop
+  - strace
+  - telnet
+  - curl
+  - iotop
+  - jq
+
+users:
+  - name: ${username}
+    groups: sudo
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    ssh_authorized_keys:
+      - ${ssh_authorized_keys}
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent.service
+  - systemctl reload systemd-networkd.service

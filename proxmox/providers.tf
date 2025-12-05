@@ -1,9 +1,13 @@
 terraform {
-  required_version = ">= 1.9.0"
+  required_version = ">= 1.13.0"
 
   required_providers {
     proxmox = {
       source = "bpg/proxmox"
+    }
+
+    ansible = {
+      source = "ansible/ansible"
     }
   }
 }
@@ -16,4 +20,8 @@ provider "proxmox" {
     agent    = true
     username = "root"
   }
+
+  random_vm_ids      = true
+  random_vm_id_end   = 299
+  random_vm_id_start = 200
 }
