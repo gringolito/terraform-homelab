@@ -9,6 +9,7 @@
     components:
       - main
     signed_by: "{{ powerdns_repository_key }}"
+  become: true
 
 - name: Install PowerDNS
   ansible.builtin.apt:

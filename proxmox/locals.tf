@@ -1,7 +1,7 @@
 locals {
   ansible_root            = "${path.module}/../ansible"
   ansible_playbook_binary = "${local.ansible_root}/bin/tf-ansible-playbook"
-  ansible_playbook        = "${local.ansible_root}/playbook.yaml"
+  ansible_playbook        = "${local.ansible_root}/vms.yaml"
 
   vault                  = nonsensitive(yamldecode(ansible_vault.terraform_variables.yaml))
   dns_server             = local.vault.dns_server
