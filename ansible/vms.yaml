@@ -1,0 +1,69 @@
+---
+- name: Load Ansible variables
+  gather_facts: false
+  hosts:
+    - all
+  tasks:
+    - name: From Terraform execution
+      ansible.builtin.include_vars: "{{ terraform_var_file }}"
+      tags:
+        - always
+
+- name: Common customizations
+  hosts: all
+  become: true
+  tasks:
+    - name: Install extra packages
+      ansible.builtin.package:
+        name: "{{ extra_packages }}"
+        state: present
+
+    # - name: Install SELinux Booleans for EL10
+    #   ansible.builtin.dnf:
+    #     name:
+    #       - selinux-policy-epel
+    #       - zabbix-selinux-policy
+    #     state: present
+    #   when:
+    #     - ansible_os_family == "RedHat"
+    #     - ansible_distribution_major_version | int > 9
+
+    - name: Setup shell history search
+      ansible.builtin.lineinfile:
+        path: /etc/inputrc
+        line: '"{{ item.key }}": {{ item.command }}'
+        regexp: '^"{{ item.key | regex_escape }}":'
+      loop:
+        - key: \e[A # Up arrow key
+          command: history-search-backward
+        - key: \e[B # Down arrow key
+          command: history-search-forward
+
+    # - name: Set default bash prompt
+    #   ansible.builtin.lineinfile:
+    #     path: /etc/bash.bashrc
+    #     line: PS1='\H:\u in \w \$ '
+    #     # line: PS1='\H:\[\e[92;1m\]\u\[\e[0m\] in \[\e[93m\]\w\[\e[0m\] \$ ' # color prompt
+    #     # line: PS1='\H:\u in \w (\s) \$ ' # adds a (shell) after the prompt sign
+    #     # line: PS1='\H:\[\e[92;1m\]\u\[\e[0m\] in \[\e[93m\]\w\[\e[0m\] (\s) \$ ' # color prompt with shell
+    #     regexp: ^\s*PS1=
+
+- name: Set-up Zabbix agent for monitoring
+  hosts: all
+  tasks:
+    - name: Workaround for SELinux missing booleans on EL10
+      ansible.builtin.set_fact:
+        ansible_facts: "{{ ansible_facts | combine({'selinux': ansible_facts.selinux | combine({'status': 'disabled'})}, recursive=True) }}"
+      when:
+        - ansible_os_family == "RedHat"
+        - ansible_distribution_major_version | int > 9
+    - name: Install Zabbix Agent
+      ansible.builtin.include_role:
+        name: community.zabbix.zabbix_agent
+  tags:
+    - zabbix
+
+- name: Install Kubernetes (k8s) cluster
+  hosts: k8s
+  roles:
+    - kubernetes

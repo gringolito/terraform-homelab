@@ -18,6 +18,7 @@
     components:
       - main
     signed_by: "{{ isc_kea_apt_repository_key }}"
+  become: true
   tags:
     - kea
 

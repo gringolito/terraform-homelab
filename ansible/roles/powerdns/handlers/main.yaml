@@ -3,6 +3,7 @@
   ansible.builtin.systemd_service:
     name: pdns
     state: restarted
+  become: true
 
 - name: Check PowerDNS zones
   ansible.builtin.command: pdnsutil zone check-all

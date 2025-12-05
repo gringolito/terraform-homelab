@@ -1,5 +1,6 @@
 ---
 - name: Load Ansible variables
+  gather_facts: false
   hosts:
     - all
   tasks:
@@ -7,6 +8,31 @@
       ansible.builtin.include_vars: "{{ terraform_var_file }}"
       tags:
         - always
+
+- name: Common customizations
+  gather_facts: false
+  hosts:
+    - all
+  tasks:
+    - name: Setup shell history search
+      ansible.builtin.lineinfile:
+        path: /etc/inputrc
+        line: '"{{ item.key }}": {{ item.command }}'
+        regexp: '^"{{ item.key | regex_escape }}":'
+      loop:
+        - key: \e[A # Up arrow key
+          command: history-search-backward
+        - key: \e[B # Down arrow key
+          command: history-search-forward
+
+    - name: Set default bash prompt
+      ansible.builtin.lineinfile:
+        path: /etc/bash.bashrc
+        line: PS1='\h(\u) in \w \$ '
+        regexp: ^\s*PS1=
+      loop:
+        - /etc/bash.bashrc
+        - /root/.bashrc
 
 - name: Set-up DHCP and Authoritative DNS server
   hosts:
